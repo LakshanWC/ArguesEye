@@ -1,9 +1,12 @@
 package com.wclw.argueseye;
 
+import android.content.Intent;
+import android.drm.DrmStore;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
@@ -31,6 +34,12 @@ public class MainActivity extends AppCompatActivity {
         btn.setActivated(false);
     }
 
+
+    public void goToMenu(View view){
+        ImageButton btn_menu = findViewById(R.id.btn_menu);
+        Intent menuIntent = new Intent(MainActivity.this,MenuActivity.class);
+        startActivity(menuIntent);
+    }
 
     public void verifyButtonClick(View view){
         Button button = findViewById(R.id.btn_verify);

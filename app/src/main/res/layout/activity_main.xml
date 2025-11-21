@@ -8,7 +8,7 @@
     tools:context=".MainActivity"
     android:background="@color/bg_primary">
 
-<!--contain logo and title-->
+    <!--contain logo and title-->
     <LinearLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
@@ -17,10 +17,12 @@
         android:orientation="vertical">
 
         <ImageButton
+            android:id="@+id/btn_menu"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:background="@drawable/baseline_menu_24"
-            android:backgroundTint="@color/white"/>
+            android:backgroundTint="@color/white"
+            android:onClick="goToMenu"/>
 
         <TextView
             android:layout_width="match_parent"
@@ -33,7 +35,7 @@
 
     </LinearLayout>
 
-<!--contain other things-->
+    <!--contain other things-->
     <LinearLayout
         android:id="@+id/body"
         android:layout_width="match_parent"
@@ -43,7 +45,7 @@
         app:layout_constraintTop_toBottomOf="@+id/header"
         android:orientation="vertical">
 
-<!--contain search bar-->
+        <!--contain search bar-->
         <!-- Search bar fixed using LinearLayout instead of RelativeLayout -->
         <LinearLayout
             android:id="@+id/search_bar"
@@ -72,15 +74,15 @@
                 android:inputType="textUri"
                 android:padding="8dp"/>
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_verify"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:onClick="verifyButtonClick"
+                android:backgroundTint="@color/nice_blue"
                 android:text="Verify"
                 android:layout_marginStart="8dp"/>
         </LinearLayout>
-
 
         <ScrollView
             android:layout_width="match_parent"
@@ -127,7 +129,6 @@
                     android:text="www."
                     android:textColor="@color/text_primary"
                     android:paddingBottom="12dp"/>
-
 
                 <!-- 2. Domain & Final URL -->
                 <TextView
@@ -277,7 +278,7 @@
 
     </LinearLayout>
 
-<!--contain action related buttons-->
+    <!--contain action related buttons-->
     <LinearLayout
         android:id="@+id/footer"
         android:layout_width="match_parent"
@@ -295,29 +296,31 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_block"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:backgroundTint="@color/btn_block"
                 android:text="Block Url"/>
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_continue"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="10dp"
-                android:text="Continue"/>
+                android:backgroundTint="@color/btn_continue_anyway"
+                android:text="Continue Any Way"/>
         </LinearLayout>
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_open_sandbox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            android:backgroundTint="@color/btn_sandbox"
             android:text="Open in Sandbox Environment"/>
     </LinearLayout>
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>
