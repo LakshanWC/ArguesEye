@@ -1,6 +1,9 @@
 package com.wclw.argueseye;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageButton;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,5 +23,11 @@ public class MenuActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+    }
+
+
+    public void goToHome(View view){
+        Intent homeIntent = new Intent(MenuActivity.this,MainActivity.class);
+        startActivity(homeIntent);
     }
 }

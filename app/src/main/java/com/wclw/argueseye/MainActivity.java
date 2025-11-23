@@ -36,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void goToMenu(View view){
-        ImageButton btn_menu = findViewById(R.id.btn_menu);
         Intent menuIntent = new Intent(MainActivity.this,MenuActivity.class);
         startActivity(menuIntent);
     }

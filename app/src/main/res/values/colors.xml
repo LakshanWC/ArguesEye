@@ -18,9 +18,12 @@
     <color name="nice_blue">#4F46E5</color>
     <color name="block_url">#D32F2F</color>
 
-    <color name="btn_block">#D32F2F</color>          <!-- Red 700 -->
-    <color name="btn_continue_anyway">#F57C00</color> <!-- Orange 700 -->
+    <color name="btn_block">#D32F2F</color>
+    <color name="btn_continue_anyway">#F57C00</color>
     <color name="btn_sandbox">#1565C0</color>
+
+
+    <color name="soft_black">#3b444b</color>
 
 
 </resources>

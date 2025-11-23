@@ -16,13 +16,40 @@
         android:background="@color/bg_card"
         android:orientation="vertical">
 
+
+    <LinearLayout
+        android:id="@+id/nav_bar_line"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:paddingHorizontal="10dp"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/nav_button_box">
+
         <ImageButton
-            android:id="@+id/btn_menu"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@drawable/baseline_menu_24"
-            android:backgroundTint="@color/white"
-            android:onClick="goToMenu"/>
+            android:id="@+id/btn_home"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="10dp"
+            android:src="@drawable/shield_24px"
+            android:tint="@color/nice_blue"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="fitCenter" />
+
+        <ImageButton
+            android:id="@+id/btn_more"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="10dp"
+            android:src="@drawable/more_horiz_24px"
+            android:onClick="goToMenu"
+            android:tint="@color/white"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="fitCenter" />
+
+    </LinearLayout>
+
 
         <TextView
             android:layout_width="match_parent"
