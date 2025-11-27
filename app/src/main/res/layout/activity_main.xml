@@ -24,8 +24,7 @@
         android:orientation="horizontal"
         android:layout_marginTop="10dp"
         android:paddingHorizontal="10dp"
-        android:layout_gravity="center_horizontal"
-        android:background="@drawable/nav_button_box">
+        android:layout_gravity="center_horizontal">
 
         <ImageButton
             android:id="@+id/btn_home"
@@ -107,6 +106,7 @@
                 android:layout_height="wrap_content"
                 android:onClick="verifyButtonClick"
                 android:backgroundTint="@color/nice_blue"
+                android:textColor="@color/white"
                 android:text="Verify"
                 android:layout_marginStart="8dp"/>
         </LinearLayout>
@@ -329,6 +329,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:backgroundTint="@color/btn_block"
+                android:textColor="@color/white"
                 android:text="Block Url"/>
 
             <com.google.android.material.button.MaterialButton
@@ -337,6 +338,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:layout_marginStart="10dp"
+                android:textColor="@color/white"
                 android:backgroundTint="@color/btn_continue_anyway"
                 android:text="Continue Any Way"/>
         </LinearLayout>
@@ -346,6 +348,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
+            android:textColor="@color/white"
             android:backgroundTint="@color/btn_sandbox"
             android:text="Open in Sandbox Environment"/>
     </LinearLayout>
