@@ -19,7 +19,11 @@ public class CsvToBloomFilter {
                 falsePositives
         );
 
-        String fileName = filePath.substring(filePath.lastIndexOf(('/')+1));
+        String fileName = filePath.substring(filePath.lastIndexOf('/')+1);
+
+        if (fileName.endsWith(".csv")) {
+            fileName = fileName.substring(0, fileName.length() - 4);
+        }
 
         try(InputStream inputStream = context.getAssets().open(filePath);
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream)))
@@ -31,8 +35,6 @@ public class CsvToBloomFilter {
                     bloomFilter.put(line);
                 }
             }
-            bufferedReader.close();
-            inputStream.close();
 
             return saveBloomFilter(context,bloomFilter,fileName);
         }
@@ -49,8 +51,9 @@ public class CsvToBloomFilter {
             ObjectOutputStream outputStream = new ObjectOutputStream(fileOutputStream);
 
             outputStream.writeObject(bloomFilter);
-            fileOutputStream.close();
+
             outputStream.close();
+            fileOutputStream.close();
             return true;
         }
         catch (Exception e){

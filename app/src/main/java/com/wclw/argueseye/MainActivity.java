@@ -8,6 +8,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,7 +16,12 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import java.util.concurrent.Executors;
+
 public class MainActivity extends AppCompatActivity {
+
+    private View loadingOverlay;
+    private TextView loadingMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,10 +34,16 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-
-
         Button btn = findViewById(R.id.btn_block);
         btn.setActivated(false);
+
+        loadingOverlay = findViewById(R.id.loading_overlay);
+        loadingMessage = findViewById(R.id.txt_loading_message);
+
+        showLoading(true, "Initializing security database...");
+        buildFiltersAsync();
+
+
     }
 
 
@@ -55,6 +67,43 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+
+    private void buildFiltersAsync() {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            boolean result = createInitialBaseLineFilters();
+
+            runOnUiThread(() -> {
+                showLoading(false, "");
+                if (result) {
+                    Toast.makeText(this, "Filters ready!", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(this, "Failed to create filters!", Toast.LENGTH_LONG).show();
+                }
+            });
+        });
+    }
+
+
+    public boolean createInitialBaseLineFilters() {
+        CsvToBloomFilter csvToBloomFilter = new CsvToBloomFilter();
+
+        String trustedSourcesPath   = "raw/trusted/tranco_trusted_initial.csv";
+        String untrustedSourcesPath = "raw/untrusted/urlhash_scam_initial.csv";
+
+
+        boolean trustedOK   = csvToBloomFilter.buildBloomFilter(this, trustedSourcesPath, 1048576, 0.0001);
+        boolean untrustedOK = csvToBloomFilter.buildBloomFilter(this, untrustedSourcesPath, 107212, 0.0001);
+
+        return trustedOK && untrustedOK;
+    }
+
+
+    private void showLoading(boolean show, String message) {
+        loadingOverlay.setVisibility(show ? View.VISIBLE : View.GONE);
+        loadingMessage.setText(message);
+    }
+
 
     public void openBrowserSandBox(View view){
         EditText urlTxt = findViewById(R.id.editTxt_url);
