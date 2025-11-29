@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,8 +21,7 @@ import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
 
-    private View loadingOverlay;
-    private TextView loadingMessage;
+    private EditText editText_url;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,14 +35,10 @@ public class MainActivity extends AppCompatActivity {
         });
 
         Button btn = findViewById(R.id.btn_block);
+        editText_url = findViewById(R.id.editTxt_url);
         btn.setActivated(false);
 
-        loadingOverlay = findViewById(R.id.loading_overlay);
-        loadingMessage = findViewById(R.id.txt_loading_message);
-
-        showLoading(true, "Initializing security database...");
-        buildFiltersAsync();
-
+        BloomFilterHelper.initialize(this);
 
     }
 
@@ -60,50 +56,26 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                tv_prefix.setText("ww3.");
-                tv_risk.setText("Safe I think");
+
+
+                FilterType type = BloomFilterHelper.checkFilter(editText_url.getText().toString());
+
+                switch(type){
+                    case TRUSTED:
+                        tv_risk.setText("Found in TRUSTED List");
+                        break;
+                    case UNTRUSTED:
+                        tv_risk.setText("Found in Untrusted List");
+                        break;
+                    case NONE:
+                        tv_risk.setText("Not Found");
+                        break;
+                }
 
                 //ToDo:implement url verification
             }
         });
     }
-
-
-    private void buildFiltersAsync() {
-        Executors.newSingleThreadExecutor().execute(() -> {
-            boolean result = createInitialBaseLineFilters();
-
-            runOnUiThread(() -> {
-                showLoading(false, "");
-                if (result) {
-                    Toast.makeText(this, "Filters ready!", Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(this, "Failed to create filters!", Toast.LENGTH_LONG).show();
-                }
-            });
-        });
-    }
-
-
-    public boolean createInitialBaseLineFilters() {
-        CsvToBloomFilter csvToBloomFilter = new CsvToBloomFilter();
-
-        String trustedSourcesPath   = "raw/trusted/tranco_trusted_initial.csv";
-        String untrustedSourcesPath = "raw/untrusted/urlhash_scam_initial.csv";
-
-
-        boolean trustedOK   = csvToBloomFilter.buildBloomFilter(this, trustedSourcesPath, 1048576, 0.0001);
-        boolean untrustedOK = csvToBloomFilter.buildBloomFilter(this, untrustedSourcesPath, 107212, 0.0001);
-
-        return trustedOK && untrustedOK;
-    }
-
-
-    private void showLoading(boolean show, String message) {
-        loadingOverlay.setVisibility(show ? View.VISIBLE : View.GONE);
-        loadingMessage.setText(message);
-    }
-
 
     public void openBrowserSandBox(View view){
         EditText urlTxt = findViewById(R.id.editTxt_url);
