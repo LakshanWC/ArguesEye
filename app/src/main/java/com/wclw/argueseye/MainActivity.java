@@ -1,14 +1,14 @@
 package com.wclw.argueseye;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Intent;
-import android.drm.DrmStore;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,8 +17,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-
-import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -100,10 +98,10 @@ public class MainActivity extends AppCompatActivity {
 
                     if(parts.scheme.equalsIgnoreCase("https")){
                         showCertificateDetails(editText_url.getText().toString());
-                        tv_cert_Stat.setVisibility(8);
+                        tv_cert_Stat.setVisibility(View.GONE);
                     }else{
                         tv_cert_Stat.setText("No SSL certificate available (not HTTPS)");
-                        tv_cert_Stat.setVisibility(0);
+                        tv_cert_Stat.setVisibility(View.VISIBLE);
                     }
                 }
                 else{
@@ -114,30 +112,81 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void showCertificateDetails(String url){
-        SSLVerificationHelper sslVerificationHelper = new SSLVerificationHelper();
-        SSLVerificationHelper.CertificateParts certPart = new SSLVerificationHelper.CertificateParts();
-        certPart = sslVerificationHelper.checkSSLCertificate(url,this);
+    private void showCertificateDetails(String url) {
 
-        if(certPart != null){
+        CertificateChecker sslVerificationHelper = new CertificateChecker();
 
-            Toast tts = Toast.makeText(this,"i got somthing",Toast.LENGTH_SHORT);
-            tts.show();
+        sslVerificationHelper.checkCertificate(url, this, results -> {
 
-        TextView cert_subject = findViewById(R.id.tv_cert_subject);
-        TextView cert_issuer = findViewById(R.id.tv_cert_issuer);
-        TextView cert_validFrom = findViewById(R.id.tv_cert_valid_from);
-        TextView cert_validTill = findViewById(R.id.tv_cert_valid_until);
+            runOnUiThread(() -> {
+                if (results == null || results.error != null) {
+                    sslCertLayout.setVisibility(View.GONE);
+                    Toast.makeText(this, "Certificate error: " + (results != null ? results.error : "Unknown"), Toast.LENGTH_LONG).show();
+                    return;
+                }
 
-            cert_subject.setText(certPart.subject != null ? certPart.subject : "N/A");
-            cert_issuer.setText(certPart.issuer != null ? certPart.issuer : "N/A");
-            cert_validFrom.setText(certPart.validFrom != null ? certPart.validFrom : "N/A");
-            cert_validTill.setText(certPart.validUntil != null ? certPart.validUntil : "N/A");
+                sslCertLayout.setVisibility(View.VISIBLE);
 
-        sslCertLayout.setVisibility(0);
-        }
-        else sslCertLayout.setVisibility(8);
+                // Find views
+                TextView tvSubject = findViewById(R.id.tv_cert_subject);
+                TextView tvIssuer = findViewById(R.id.tv_cert_issuer);
+                TextView tvFrom = findViewById(R.id.tv_cert_valid_from);
+                TextView tvUntil = findViewById(R.id.tv_cert_valid_until);
+                TextView tvFingerprint = findViewById(R.id.tv_cert_fingerprint);
+                TextView tvSans = findViewById(R.id.tv_cert_sans);
+                TextView tvSummary = findViewById(R.id.tv_cert_security_summary);
+                View warningBanner = findViewById(R.id.cert_warning_banner);
+                View safeBanner = findViewById(R.id.cert_safe_banner);
+
+                // Fill basic fields
+                tvSubject.setText(results.subject != null ? results.subject : "N/A");
+                tvIssuer.setText(results.issuer != null ? results.issuer : "N/A");
+                tvFrom.setText(results.validFrom != null ? results.validFrom : "N/A");
+                tvUntil.setText(results.validUntil != null ? results.validUntil : "N/A");
+                tvFingerprint.setText(results.fingerprint != null ? results.fingerprint : "N/A");
+
+                // SANs
+                String sansText = results.sans.isEmpty() ? "None" : "• " + TextUtils.join("\n• ", results.sans);
+                tvSans.setText(sansText);
+
+                // Security summary
+                StringBuilder warning = new StringBuilder();
+                boolean hasWarning = false;
+
+                if (results.hostnameMismatch) {
+                    warning.append("HOSTNAME DOES NOT MATCH\n");
+                    hasWarning = true;
+                }
+                if (results.expired) {
+                    warning.append("CERTIFICATE EXPIRED\n");
+                    hasWarning = true;
+                }
+                if (results.selfSigned) {
+                    warning.append("SELF-SIGNED CERTIFICATE\n");
+                    hasWarning = true;
+                }
+
+                if (hasWarning) {
+                    tvSummary.setText(warning.toString().trim());
+                    warningBanner.setVisibility(View.VISIBLE);
+                    safeBanner.setVisibility(View.GONE);
+                } else {
+                    warningBanner.setVisibility(View.GONE);
+                    safeBanner.setVisibility(View.VISIBLE);
+                }
+
+                // Make fingerprint easy to copy
+                tvFingerprint.setOnLongClickListener(v -> {
+                    ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                    ClipData clip = ClipData.newPlainText("SHA-256 Fingerprint", results.fingerprint);
+                    cm.setPrimaryClip(clip);
+                    Toast.makeText(this, "Fingerprint copied!", Toast.LENGTH_SHORT).show();
+                    return true;
+                });
+            });
+        });
     }
+
 
     public void openBrowserSandBox(View view){
         EditText urlTxt = findViewById(R.id.editTxt_url);
