@@ -41,4 +41,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+    implementation("com.google.guava:guava:33.3.1-android") //for bloom filter
+    implementation("com.squareup.okhttp3:okhttp:4.12.0") //for prasing urls
 }

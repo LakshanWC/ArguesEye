@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_primary"
+    tools:context=".MenuActivity">
+
+    <LinearLayout
+        android:id="@+id/nav_buttons_line"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp"
+        android:gravity="center_horizontal">
+
+        <ImageButton
+            android:id="@+id/btn_home"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="10dp"
+            android:src="@drawable/shield_24px"
+            android:tint="@color/white"
+            android:onClick="goToHome"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="fitCenter" />
+
+        <ImageButton
+            android:id="@+id/btn_more"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="10dp"
+            android:src="@drawable/more_horiz_24px"
+            android:tint="@color/nice_blue"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="fitCenter" />
+
+    </LinearLayout>
+
+        <!-- 2×3 responsive grid -->
+        <GridLayout
+            android:id="@+id/grid_menu"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:columnCount="2"
+            android:rowCount="3"
+            android:alignmentMode="alignBounds"
+            android:useDefaultMargins="true"
+            android:padding="16dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/nav_buttons_line"
+            app:layout_constraintBottom_toTopOf="@+id/donation_section"
+            app:layout_constraintVertical_bias="0">
+
+            <!-- Re-usable card style can be extracted to styles.xml if you want -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/Widget.Material3.CardView.Elevated"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                android:layout_margin="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="8dp"
+                app:strokeColor="#33FFFFFF"
+                app:strokeWidth="1dp"
+                app:cardBackgroundColor="@android:color/transparent">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="Scan History"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:background="@color/nice_blue" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Repeat the same card 5 more times with different text / ids -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btn_database"
+                style="@style/Widget.Material3.CardView.Elevated"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                android:layout_margin="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="8dp"
+                app:strokeColor="#33FFFFFF"
+                app:strokeWidth="1dp"
+                app:cardBackgroundColor="@android:color/transparent">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="Database"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:background="@color/nice_blue" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Blocklist -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btn_blocklist"
+                style="@style/Widget.Material3.CardView.Elevated"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                android:layout_margin="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="8dp"
+                app:strokeColor="#33FFFFFF"
+                app:strokeWidth="1dp"
+                app:cardBackgroundColor="@android:color/transparent">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="Blocklist"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:background="@color/nice_blue" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Settings -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btn_settings"
+                style="@style/Widget.Material3.CardView.Elevated"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                android:layout_margin="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="8dp"
+                app:strokeColor="#33FFFFFF"
+                app:strokeWidth="1dp"
+                app:cardBackgroundColor="@android:color/transparent">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="Settings"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:background="@color/nice_blue" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- About -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btn_about"
+                style="@style/Widget.Material3.CardView.Elevated"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                android:layout_margin="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="8dp"
+                app:strokeColor="#33FFFFFF"
+                app:strokeWidth="1dp"
+                app:cardBackgroundColor="@android:color/transparent">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="About"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:background="@color/nice_blue" />
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Exit -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btn_exit"
+                style="@style/Widget.Material3.CardView.Elevated"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_columnWeight="1"
+                android:layout_rowWeight="1"
+                android:layout_margin="8dp"
+                android:clickable="true"
+                android:focusable="true"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="8dp"
+                app:strokeColor="#33FFFFFF"
+                app:strokeWidth="1dp"
+                app:cardBackgroundColor="@android:color/transparent">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="Exit"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:background="@color/nice_blue" />
+            </com.google.android.material.card.MaterialCardView>
+
+        </GridLayout>
+
+        <!-- Donation / Support section -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/donation_section"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="24dp"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="12dp"
+            app:cardBackgroundColor="#22FFFFFF"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="28dp"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="68dp"
+                    android:layout_height="68dp"
+                    android:tint="#40C4FF"
+                    android:layout_marginBottom="12dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Love ArgusEye?"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Support future updates"
+                    android:textSize="14sp"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="20dp"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_support"
+                    style="@style/Widget.Material3.Button.ElevatedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="52dp"
+                    android:text="Buy me a coffee"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    app:backgroundTint="@color/accent_orange"
+                    app:iconGravity="textStart"
+                    app:iconPadding="12dp"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Thank you to everyone who donates ❤️"
+                    android:textColor="@color/white"
+                    android:textSize="13sp"/>
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
