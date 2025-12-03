@@ -99,7 +99,6 @@
                 android:id="@+id/btn_verify"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="verifyButtonClick"
                 android:backgroundTint="@color/nice_blue"
                 android:textColor="@color/white"
                 android:text="Verify"
@@ -135,6 +134,22 @@
                         android:textStyle="bold"
                         android:textColor="@color/text_primary" />
                 </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_domain_details_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Domain Details"
+                    android:textStyle="bold"
+                    android:layout_marginTop="20dp"
+                    android:textColor="@color/text_secondary"/>
+
+<!--keep all domaind details-->
+                <LinearLayout
+                    android:id="@+id/domain_details_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
 
                 <!-- Domain info -->
                 <TextView
@@ -222,8 +237,11 @@
                     android:textColor="@color/text_primary"
                     android:paddingBottom="12dp"/>
 
+                </LinearLayout>
+
                 <!-- SSL Certificate Info -->
                 <TextView
+                    android:id="@+id/tv_ssl_certificate_status"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="SSL Certificate Details"

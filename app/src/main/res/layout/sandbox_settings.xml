@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_primary">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switch_js"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enable JavaScript"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:layout_marginBottom="12dp"/>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switch_images"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Load images automatically"
+            android:checked="true"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:layout_marginBottom="12dp"/>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switch_location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Allow location access"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:layout_marginBottom="12dp"/>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switch_popup_block"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Block pop-ups"
+            android:checked="true"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:layout_marginBottom="20dp"/>
+
+        <!-- New Privacy Toggles -->
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switch_third_party_cookies"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Block third-party cookies"
+            android:checked="true"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:layout_marginBottom="12dp"/>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switch_spoof_ua"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Spoof User-Agent"
+            android:checked="true"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:layout_marginBottom="12dp"/>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switch_desktop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Request desktop site"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:layout_marginBottom="12dp"/>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switch_no_referrer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="No-referrer header"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:checked="true"/>
+
+    </LinearLayout>
+</ScrollView>

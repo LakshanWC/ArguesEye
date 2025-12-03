@@ -58,14 +58,12 @@
             android:id="@+id/btn_build_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="startBuilding"
             android:text="build"/>
 
         <Button
             android:id="@+id/btn_skip_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="skipBuilding"
             android:text="Skip rebuilding"/>
     </LinearLayout>
 

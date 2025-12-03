@@ -43,4 +43,6 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation("com.google.guava:guava:33.3.1-android") //for bloom filter
     implementation("com.squareup.okhttp3:okhttp:4.12.0") //for prasing urls
+    implementation("androidx.webkit:webkit:1.12.0")
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 }

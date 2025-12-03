@@ -1,200 +1,242 @@
 package com.wclw.argueseye;
 
+import android.app.Notification;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 public class MainActivity extends AppCompatActivity {
 
     private UrlParser urlParser;
     private EditText editText_url;
+
+    private LinearLayout domainDetails;
     private LinearLayout sslCertLayout;
 
+    private TextView domainDetailsTV;
+    private TextView sslCertificateStatusTV;
+
+    private boolean isDomainDetailsVisible = false;
+    private boolean isSSLDetailsVisible = false;
+
+    // Cache these views once (used a lot)
+    private TextView tv_domain, tv_subdomain, tv_tld, tv_path, tv_query, tv_scheme;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
 
         urlParser = new UrlParser();
 
 
-        Button btn = findViewById(R.id.btn_block);
         editText_url = findViewById(R.id.editTxt_url);
+        domainDetails = findViewById(R.id.domain_details_container);
         sslCertLayout = findViewById(R.id.ssl_cert_container);
-        btn.setActivated(false);
 
+        domainDetailsTV = findViewById(R.id.tv_domain_details_status);
+        sslCertificateStatusTV = findViewById(R.id.tv_ssl_certificate_status);
+
+        tv_domain = findViewById(R.id.tv_domain);
+        tv_subdomain = findViewById(R.id.tv_subdomain);
+        tv_tld = findViewById(R.id.tv_tld);
+        tv_path = findViewById(R.id.tv_path);
+        tv_query = findViewById(R.id.tv_query);
+        tv_scheme = findViewById(R.id.tv_scheme);
+
+
+        setupExpandableSections();
+
+        findViewById(R.id.btn_verify).setOnClickListener(v -> verifyUrl());
+        findViewById(R.id.btn_continue).setOnClickListener(v->continueToBrowser());
+        findViewById(R.id.btn_open_sandbox).setOnClickListener(v->openBrowserSandBox());
 
         BloomFilterHelper.initialize(this);
-
     }
 
+    private void setupExpandableSections() {
+        domainDetailsTV.setOnClickListener(v -> {
+            isDomainDetailsVisible = !isDomainDetailsVisible;
+            domainDetails.setVisibility(isDomainDetailsVisible ? View.VISIBLE : View.GONE);
+            updateArrow(domainDetailsTV);
+        });
 
-    public void goToMenu(View view){
-        Intent menuIntent = new Intent(MainActivity.this,MenuActivity.class);
-        startActivity(menuIntent);
+        sslCertificateStatusTV.setOnClickListener(v -> {
+            isSSLDetailsVisible = !isSSLDetailsVisible;
+            sslCertLayout.setVisibility(isSSLDetailsVisible ? View.VISIBLE : View.GONE);
+            updateArrow(sslCertificateStatusTV);
+        });
+
+        // Start collapsed
+        domainDetails.setVisibility(View.GONE);
+        sslCertLayout.setVisibility(View.GONE);
     }
 
-    public void verifyButtonClick(View view){
-        Button button = findViewById(R.id.btn_verify);
+    private void updateArrow(TextView textView) {
+        String text = textView.getText().toString();
+        if (text.contains("▼")) {
+            textView.setText(text.replace("▼", "▲"));
+        } else {
+            textView.setText(text.replace("▲", "▼"));
+        }
+    }
+
+    private void verifyUrl() {
+        String url = editText_url.getText().toString().trim();
+        if (TextUtils.isEmpty(url)) {
+            Toast.makeText(this, "Please enter a URL", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
+        FilterType type = BloomFilterHelper.checkFilter(url);
+        UrlParser.Parts parts = urlParser.parseUrl(url);
+
         TextView tv_risk = findViewById(R.id.tv_risk_level);
-
-        TextView tv_domain = findViewById(R.id.tv_domain);
-        TextView tv_scheme = findViewById(R.id.tv_scheme);
-        TextView tv_subdomain = findViewById(R.id.tv_subdomain);
-        TextView tv_tdl = findViewById(R.id.tv_tld);
-        TextView tv_path = findViewById(R.id.tv_path);
-        TextView tv_query = findViewById(R.id.tv_query);
-
         TextView tv_cert_Stat = findViewById(R.id.tv_cert_avilability);
 
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        // Update risk level
+        switch (type) {
+            case TRUSTED :
+                tv_risk.setText("Found in TRUSTED List");
+                break;
+            case UNTRUSTED :
+                tv_risk.setText("Found in Untrusted List");
+                break;
+            case NONE :
+                tv_risk.setText("Not Found");
+                break;
+        }
 
+        if (parts != null) {
+            // Fill URL parts
+            tv_domain.setText(parts.domain + "." + parts.tld);
+            tv_subdomain.setText(TextUtils.isEmpty(parts.subdomain) ? "None" : parts.subdomain);
+            tv_tld.setText(parts.tld);
+            tv_path.setText(TextUtils.isEmpty(parts.path) ? "/" : parts.path);
+            tv_query.setText(TextUtils.isEmpty(parts.query) ? "None" : parts.query);
+            tv_scheme.setText(parts.scheme);
 
-                FilterType type = BloomFilterHelper.checkFilter(editText_url.getText().toString());
-                UrlParser.Parts parts = urlParser.parseUrl(editText_url.getText().toString());
+            // Reset expandable sections every time
+            domainDetailsTV.setText("Domain Details ▼");
+            isDomainDetailsVisible = false;
+            domainDetails.setVisibility(View.GONE);
 
-                switch(type){
-                    case TRUSTED:
-                        tv_risk.setText("Found in TRUSTED List");
-                        break;
-                    case UNTRUSTED:
-                        tv_risk.setText("Found in Untrusted List");
-                        break;
-                    case NONE:
-                        tv_risk.setText("Not Found");
-                        break;
-                }
-
-                if(parts != null) {
-                    tv_domain.setText(parts.domain+"." + parts.tld);
-                    tv_subdomain.setText(parts.subdomain);
-                    tv_tdl.setText(parts.tld);
-                    tv_path.setText(parts.path);
-                    tv_query.setText(parts.query);
-                    tv_scheme.setText(parts.scheme);
-
-                    if(parts.scheme.equalsIgnoreCase("https")){
-                        showCertificateDetails(editText_url.getText().toString());
-                        tv_cert_Stat.setVisibility(View.GONE);
-                    }else{
-                        tv_cert_Stat.setText("No SSL certificate available (not HTTPS)");
-                        tv_cert_Stat.setVisibility(View.VISIBLE);
-                    }
-                }
-                else{
-                    tv_cert_Stat.setText("Invalid URL");
-                    tv_cert_Stat.setVisibility(View.VISIBLE);
-                }
+            if (parts.scheme.equalsIgnoreCase("https")) {
+                tv_cert_Stat.setVisibility(View.GONE);
+                sslCertificateStatusTV.setText("SSL Certificate ▼");
+                isSSLDetailsVisible = false;
+                showCertificateDetails(url);  // This will fill SSL data
+            } else {
+                tv_cert_Stat.setText("No SSL certificate (not HTTPS)");
+                tv_cert_Stat.setVisibility(View.VISIBLE);
+                sslCertificateStatusTV.setText("SSL Certificate (Not Available)");
+                sslCertLayout.setVisibility(View.GONE);
             }
-        });
+        } else {
+            tv_risk.setText("Invalid URL Format");
+            tv_cert_Stat.setText("Invalid URL");
+            tv_cert_Stat.setVisibility(View.VISIBLE);
+        }
     }
 
     private void showCertificateDetails(String url) {
+        new CertificateChecker().checkCertificate(url, this, results -> runOnUiThread(() -> {
+            if (results == null || results.error != null) {
+                sslCertLayout.setVisibility(View.GONE);
+                sslCertificateStatusTV.setText("SSL Certificate (Error)");
+                Toast.makeText(this, "SSL Error: " + (results != null ? results.error : "Failed"), Toast.LENGTH_LONG).show();
+                return;
+            }
 
-        CertificateChecker sslVerificationHelper = new CertificateChecker();
+            sslCertificateStatusTV.setText("SSL Certificate  ▼");
+            isSSLDetailsVisible = false;
+            sslCertLayout.setVisibility(View.GONE); // collapsed by default
 
-        sslVerificationHelper.checkCertificate(url, this, results -> {
+            // Fill certificate info
+            ((TextView) findViewById(R.id.tv_cert_subject)).setText(results.subject != null ? results.subject : "N/A");
+            ((TextView) findViewById(R.id.tv_cert_issuer)).setText(results.issuer != null ? results.issuer : "N/A");
+            ((TextView) findViewById(R.id.tv_cert_valid_from)).setText(results.validFrom != null ? results.validFrom : "N/A");
+            ((TextView) findViewById(R.id.tv_cert_valid_until)).setText(results.validUntil != null ? results.validUntil : "N/A");
+            ((TextView) findViewById(R.id.tv_cert_fingerprint)).setText(results.fingerprint != null ? results.fingerprint : "N/A");
 
-            runOnUiThread(() -> {
-                if (results == null || results.error != null) {
-                    sslCertLayout.setVisibility(View.GONE);
-                    Toast.makeText(this, "Certificate error: " + (results != null ? results.error : "Unknown"), Toast.LENGTH_LONG).show();
-                    return;
-                }
+            String sans = results.sans.isEmpty() ? "None" : "• " + TextUtils.join("\n• ", results.sans);
+            ((TextView) findViewById(R.id.tv_cert_sans)).setText(sans);
 
-                sslCertLayout.setVisibility(View.VISIBLE);
+            // Warning / Safe banner
+            TextView tvSummary = findViewById(R.id.tv_cert_security_summary);
+            View warningBanner = findViewById(R.id.cert_warning_banner);
+            View safeBanner = findViewById(R.id.cert_safe_banner);
 
-                // Find views
-                TextView tvSubject = findViewById(R.id.tv_cert_subject);
-                TextView tvIssuer = findViewById(R.id.tv_cert_issuer);
-                TextView tvFrom = findViewById(R.id.tv_cert_valid_from);
-                TextView tvUntil = findViewById(R.id.tv_cert_valid_until);
-                TextView tvFingerprint = findViewById(R.id.tv_cert_fingerprint);
-                TextView tvSans = findViewById(R.id.tv_cert_sans);
-                TextView tvSummary = findViewById(R.id.tv_cert_security_summary);
-                View warningBanner = findViewById(R.id.cert_warning_banner);
-                View safeBanner = findViewById(R.id.cert_safe_banner);
+            StringBuilder warning = new StringBuilder();
+            boolean hasIssue = false;
 
-                // Fill basic fields
-                tvSubject.setText(results.subject != null ? results.subject : "N/A");
-                tvIssuer.setText(results.issuer != null ? results.issuer : "N/A");
-                tvFrom.setText(results.validFrom != null ? results.validFrom : "N/A");
-                tvUntil.setText(results.validUntil != null ? results.validUntil : "N/A");
-                tvFingerprint.setText(results.fingerprint != null ? results.fingerprint : "N/A");
+            if (results.hostnameMismatch) { warning.append("HOSTNAME MISMATCH\n"); hasIssue = true; }
+            if (results.expired) { warning.append("CERTIFICATE EXPIRED\n"); hasIssue = true; }
+            if (results.selfSigned) { warning.append("SELF-SIGNED CERTIFICATE\n"); hasIssue = true; }
 
-                // SANs
-                String sansText = results.sans.isEmpty() ? "None" : "• " + TextUtils.join("\n• ", results.sans);
-                tvSans.setText(sansText);
+            if (hasIssue) {
+                tvSummary.setText(warning.toString().trim());
+                warningBanner.setVisibility(View.VISIBLE);
+                safeBanner.setVisibility(View.GONE);
+            } else {
+                warningBanner.setVisibility(View.GONE);
+                safeBanner.setVisibility(View.VISIBLE);
+            }
 
-                // Security summary
-                StringBuilder warning = new StringBuilder();
-                boolean hasWarning = false;
-
-                if (results.hostnameMismatch) {
-                    warning.append("HOSTNAME DOES NOT MATCH\n");
-                    hasWarning = true;
-                }
-                if (results.expired) {
-                    warning.append("CERTIFICATE EXPIRED\n");
-                    hasWarning = true;
-                }
-                if (results.selfSigned) {
-                    warning.append("SELF-SIGNED CERTIFICATE\n");
-                    hasWarning = true;
-                }
-
-                if (hasWarning) {
-                    tvSummary.setText(warning.toString().trim());
-                    warningBanner.setVisibility(View.VISIBLE);
-                    safeBanner.setVisibility(View.GONE);
-                } else {
-                    warningBanner.setVisibility(View.GONE);
-                    safeBanner.setVisibility(View.VISIBLE);
-                }
-
-                // Make fingerprint easy to copy
-                tvFingerprint.setOnLongClickListener(v -> {
-                    ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                    ClipData clip = ClipData.newPlainText("SHA-256 Fingerprint", results.fingerprint);
-                    cm.setPrimaryClip(clip);
-                    Toast.makeText(this, "Fingerprint copied!", Toast.LENGTH_SHORT).show();
-                    return true;
-                });
+            // Copy fingerprint on long press
+            findViewById(R.id.tv_cert_fingerprint).setOnLongClickListener(v -> {
+                ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                cm.setPrimaryClip(ClipData.newPlainText("Fingerprint", results.fingerprint));
+                Toast.makeText(this, "Fingerprint copied!", Toast.LENGTH_SHORT).show();
+                return true;
             });
-        });
+        }));
     }
 
+    private void continueToBrowser(){
+        String url = editText_url.toString();
 
-    public void openBrowserSandBox(View view){
-        EditText urlTxt = findViewById(R.id.editTxt_url);
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            url = "https://" + url;
+        }
 
-        //TODO:implement sandbox method
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+
+        if(browserIntent.resolveActivity(getPackageManager())!=null){
+            startActivity(browserIntent);
+        }
+        else{
+            Toast toast = Toast.makeText(this,"No Web Browser Found !",Toast.LENGTH_SHORT);
+        }
     }
 
-    public void blockUrl(View view){
-        //TODO:implement url block method
+    // Menu & other buttons
+    public void goToMenu(View view) {
+        startActivity(new Intent(this, MenuActivity.class));
     }
+
+    public void openBrowserSandBox() {
+        String url = editText_url.getText().toString().trim();
+
+        if (TextUtils.isEmpty(url)) {
+            Toast.makeText(this, "Enter a URL first", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Intent webViewIntent = new Intent(this,SandBoxBrowser.class);
+        webViewIntent.putExtra("url",url);
+        startActivity(webViewIntent);
+    }
+    public void blockUrl(View view) { /* TODO */ }
 }

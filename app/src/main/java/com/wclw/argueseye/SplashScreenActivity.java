@@ -73,27 +73,18 @@ public class SplashScreenActivity extends AppCompatActivity {
         build_button = findViewById(R.id.btn_build_button);
 
 //        start_animations();
+
+         findViewById(R.id.btn_skip_button).setOnClickListener(view->skipBuilding());
+         findViewById(R.id.btn_build_button).setOnClickListener(view -> skipBuilding());
     }
 
 
-    public void skipBuilding(View view){
-        tem_skip_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent i = new Intent(SplashScreenActivity.this,MainActivity.class);
-                startActivity(i);
-            }
-        });
+    public void skipBuilding(){
+        Intent i = new Intent(SplashScreenActivity.this,MainActivity.class);
+        startActivity(i);
     }
 
-    public void startBuilding(View view){
-        build_button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                start_animations();
-            }
-        });
-    }
+    public void startBuilding(){start_animations();}
 
     public void start_animations() {
 
