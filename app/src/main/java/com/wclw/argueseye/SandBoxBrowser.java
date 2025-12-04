@@ -10,13 +10,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
@@ -32,7 +35,8 @@ public class SandBoxBrowser extends AppCompatActivity {
 
     private WebView sandBox;
     private SwipeRefreshLayout swipeRefresh;
-    private TextView tvStatus;
+
+    private EditText et_current_url;
 
     // Add these member variables!
     private boolean jsEnabled = false;
@@ -52,18 +56,8 @@ public class SandBoxBrowser extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_sand_box_browser);
 
-        View header = findViewById(R.id.topHeader);
-
-        ViewCompat.setOnApplyWindowInsetsListener(header, (v, insets) -> {
-            int topInset = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
-            v.setPadding(0, topInset, 0, 0);
-            return insets;
-        });
-
-
-        tvStatus = findViewById(R.id.tv_security_mode);
-
         sandBox = findViewById(R.id.wv_sandBox);
+        et_current_url = findViewById(R.id.et_current_url);
 
         //events
         findViewById(R.id.btn_settings).setOnClickListener(v -> showSettingsDialog());
@@ -75,14 +69,25 @@ public class SandBoxBrowser extends AppCompatActivity {
         swipeRefresh = findViewById(R.id.swipeRefresh);
         findViewById(R.id.swipeRefresh).setOnClickListener(v->sandBox.reload());
 
+
         sandBox.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
                 swipeRefresh.setRefreshing(false);
+                et_current_url.setText(url);
+
+                if (getSupportActionBar() != null) {
+                    getSupportActionBar().setTitle("Sandbox • " + url);
+                }
+            }
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                String newUrl = request.getUrl().toString();
+                et_current_url.setText(newUrl);
+                return false;
             }
         });
-
-
 
 
         WebSettings settings = sandBox.getSettings();
@@ -99,7 +104,6 @@ public class SandBoxBrowser extends AppCompatActivity {
         settings.setDisplayZoomControls(false);
         settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
 
-        sandBox.setWebViewClient(new WebViewClient());
         updatePopupBlocking();
 
         String url = getIntent().getStringExtra("url");
@@ -120,6 +124,21 @@ public class SandBoxBrowser extends AppCompatActivity {
             getSupportActionBar().setTitle("Sandbox • " + finalUrl);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (sandBox != null && sandBox.canGoBack()) {
+                    sandBox.goBack();
+                } else {
+                    setEnabled(false);
+                    getOnBackPressedDispatcher().onBackPressed();
+                }
+            }
+        });
+
+        et_current_url.setText(sandBox.getUrl());
     }
 
     @Override
@@ -129,15 +148,6 @@ public class SandBoxBrowser extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onBackPressed() {
-        if (sandBox != null && sandBox.canGoBack()) {
-            sandBox.goBack();
-        } else {
-            super.onBackPressed();
-        }
     }
 
     private void showSettingsDialog() {
@@ -166,7 +176,7 @@ public class SandBoxBrowser extends AppCompatActivity {
                 .setTitle("Sandbox Settings")
                 .setView(dialogView)
                 .setPositiveButton("Apply", null)
-                .setNeutralButton("Reload", null)
+//                .setNeutralButton("Reload", null)
                 .setNegativeButton("Cancel", null)
                 .create();
 
@@ -186,8 +196,12 @@ public class SandBoxBrowser extends AppCompatActivity {
                 noReferrer = switchNoReferrer.isChecked();
 
                 applySettings();
-                Toast.makeText(this, v == btnReload ? "Settings applied → Reloaded" : "Settings applied", Toast.LENGTH_SHORT).show();
-                if (v == btnReload) sandBox.reload();
+                Toast.makeText(this, v == btnApply ? "Settings applied → Reloaded" : "Settings applied", Toast.LENGTH_SHORT).show();
+//                if (v == btnReload) sandBox.reload();
+//                reload after applying automaticly
+                sandBox.reload();
+
+
                 dialog.dismiss();
             };
 
@@ -232,7 +246,6 @@ public class SandBoxBrowser extends AppCompatActivity {
 //        }
 
         updatePopupBlocking();
-        updateSecurityStatus();
     }
 
 
@@ -278,14 +291,5 @@ public class SandBoxBrowser extends AppCompatActivity {
                 blockThirdPartyCookies &&
                 spoofUserAgent &&
                 noReferrer;
-    }
-
-    private void updateSecurityStatus() {
-
-        if (isUsingDefaultSecuritySettings()) {
-            tvStatus.setText("Security Mode: Strict");
-        } else {
-            tvStatus.setText("Security Mode: Custom");
-        }
     }
 }

@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btn_continue).setOnClickListener(v->continueToBrowser());
         findViewById(R.id.btn_open_sandbox).setOnClickListener(v->openBrowserSandBox());
 
-        BloomFilterHelper.initialize(this);
+//        BloomFilterHelper.initialize(this);
     }
 
     private void setupExpandableSections() {
@@ -92,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void verifyUrl() {
+        BloomFilterHelper.initialize(this);
         String url = editText_url.getText().toString().trim();
         if (TextUtils.isEmpty(url)) {
             Toast.makeText(this, "Please enter a URL", Toast.LENGTH_SHORT).show();
@@ -204,22 +205,37 @@ public class MainActivity extends AppCompatActivity {
         }));
     }
 
-    private void continueToBrowser(){
-        String url = editText_url.toString();
+    private void continueToBrowser() {
+        String url = editText_url.getText().toString().trim();
 
+        if (TextUtils.isEmpty(url)) {
+            Toast.makeText(this, "Enter a URL first", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Add https:// if no scheme
         if (!url.startsWith("http://") && !url.startsWith("https://")) {
             url = "https://" + url;
         }
 
-        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-
-        if(browserIntent.resolveActivity(getPackageManager())!=null){
-            startActivity(browserIntent);
+        if (!android.webkit.URLUtil.isValidUrl(url)) {
+            Toast.makeText(this, "Invalid URL", Toast.LENGTH_SHORT).show();
+            return;
         }
-        else{
-            Toast toast = Toast.makeText(this,"No Web Browser Found !",Toast.LENGTH_SHORT);
+
+        Uri uri = Uri.parse(url);
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, uri);
+
+        Intent chooser = Intent.createChooser(browserIntent, "Open with");
+
+        // check if there is atlest 1 browser
+        if (chooser.resolveActivity(getPackageManager()) != null) {
+            startActivity(chooser);
+        } else {
+            Toast.makeText(this, "No web browser installed!", Toast.LENGTH_LONG).show();
         }
     }
+
 
     // Menu & other buttons
     public void goToMenu(View view) {

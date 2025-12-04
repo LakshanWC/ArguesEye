@@ -19,9 +19,8 @@ public class BloomFilterHelper {
     private static BloomFilter<String> trustedFilter;
     private static BloomFilter<String> untrustedFilter;
 
-    // ------------------------------------------------------------
-    // LOAD FILTERS (only once, cached in memory)
-    // ------------------------------------------------------------
+
+//    LOAD FILTERS (only once, cached in memory)
     public static void initialize(Context context) {
         if (trustedFilter == null)
             trustedFilter = loadBloom(context, true);
