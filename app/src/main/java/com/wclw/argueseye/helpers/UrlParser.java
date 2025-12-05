@@ -1,4 +1,4 @@
-package com.wclw.argueseye;
+package com.wclw.argueseye.helpers;
 
 import okhttp3.HttpUrl;
 

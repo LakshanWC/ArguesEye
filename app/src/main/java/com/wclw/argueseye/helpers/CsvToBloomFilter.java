@@ -1,4 +1,4 @@
-package com.wclw.argueseye;
+package com.wclw.argueseye.helpers;
 
 import android.content.Context;
 

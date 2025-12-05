@@ -1,6 +1,5 @@
 package com.wclw.argueseye;
 
-import android.app.Notification;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Intent;
@@ -14,9 +13,24 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.drawerlayout.widget.DrawerLayout;
+
+import com.google.common.base.MoreObjects;
+import com.wclw.argueseye.dto.DomainTimeData;
+import com.wclw.argueseye.dto.RdapRespose;
+import com.wclw.argueseye.helpers.BloomFilterHelper;
+import com.wclw.argueseye.helpers.CertificateChecker;
+import com.wclw.argueseye.helpers.UrlInspectorHelper;
+import com.wclw.argueseye.helpers.UrlParser;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
+
+    private DrawerLayout drawer;
     private UrlParser urlParser;
     private EditText editText_url;
 
@@ -39,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
 
         urlParser = new UrlParser();
 
-
+        drawer = findViewById(R.id.drawer_layout);
         editText_url = findViewById(R.id.editTxt_url);
         domainDetails = findViewById(R.id.domain_details_container);
         sslCertLayout = findViewById(R.id.ssl_cert_container);
@@ -133,6 +147,11 @@ public class MainActivity extends AppCompatActivity {
             isDomainDetailsVisible = false;
             domainDetails.setVisibility(View.GONE);
 
+
+            loadRdapData(url);
+
+
+
             if (parts.scheme.equalsIgnoreCase("https")) {
                 tv_cert_Stat.setVisibility(View.GONE);
                 sslCertificateStatusTV.setText("SSL Certificate ▼");
@@ -205,6 +224,75 @@ public class MainActivity extends AppCompatActivity {
         }));
     }
 
+    //get domainage details from retro
+    private void loadRdapData(String url) {
+        UrlParser.Parts urlParts = urlParser.parseUrl(url);
+        String domain = urlParts.domain + "." + urlParts.tld;
+
+        UrlInspectorHelper.getInstance().fetchWhois(domain, new Callback<RdapRespose>() {
+            @Override
+            public void onResponse(Call<RdapRespose> call, Response<RdapRespose> response) {
+                TextView tv_registor = findViewById(R.id.tv_registration_date);
+                TextView tv_expior = findViewById(R.id.tv_expire_date);
+                TextView tv_last_changed = findViewById(R.id.tv_last_changed);
+                TextView tv_domain_age = findViewById(R.id.tv_domain_age);
+                TextView tv_is_expired = findViewById(R.id.tv_is_expired);
+                TextView tv_safety_note = findViewById(R.id.tv_safety_note);
+                TextView tv_summery = findViewById(R.id.tv_risk_summery);
+
+
+                if (response.isSuccessful() && response.body() != null) {
+                    RdapRespose rdap = response.body();
+
+                    //fetch dates
+                    String registrationDate = UrlInspectorHelper.getInstance()
+                            .findEventDate(rdap.events, "registration");
+                    String expirationDate = UrlInspectorHelper.getInstance()
+                            .findEventDate(rdap.events, "expiration");
+                    String lastUpdateDate = UrlInspectorHelper.getInstance()
+                            .findEventDate(rdap.events,"last changed");
+
+                    //clean dates
+                    registrationDate = UrlInspectorHelper.getInstance().cleanTimeStamp(registrationDate);
+                    expirationDate = UrlInspectorHelper.getInstance().cleanTimeStamp(expirationDate);
+                    lastUpdateDate = UrlInspectorHelper.getInstance().cleanTimeStamp(lastUpdateDate);
+
+                    //get age and safety note
+                    DomainTimeData domainTimeData = UrlInspectorHelper.getInstance()
+                            .domainAgeCheck(registrationDate,expirationDate);
+
+                    //set data to textViews
+                    tv_registor.setText(!registrationDate.equals("Unknown") ? registrationDate : "N/A");
+                    tv_expior.setText(!expirationDate.equals("Unknown") ? expirationDate : "N/A");
+                    tv_last_changed.setText(!lastUpdateDate.equals("Unknown")?lastUpdateDate:"N/A");
+                    tv_domain_age.setText(domainTimeData.domainAge);
+                    if(domainTimeData.isExpired){
+                        tv_is_expired.setTextColor(getResources().getColor(R.color.danger_red));
+                    }
+                    tv_is_expired.setText(domainTimeData.isExpired? "True":"False");
+                    tv_safety_note.setText(domainTimeData.message);
+                    tv_summery.setText(domainTimeData.message);
+
+                } else {
+                    tv_registor.setText("N/A");
+                    tv_expior.setText("N/A");
+                    tv_last_changed.setText("N/A");
+
+                    Toast.makeText(MainActivity.this, "RDAP response empty or failed", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<RdapRespose> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Failed to fetch RDAP: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                t.printStackTrace();
+            }
+        });
+    }
+
+
+
+
     private void continueToBrowser() {
         String url = editText_url.getText().toString().trim();
 
@@ -237,10 +325,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    // Menu & other buttons
     public void goToMenu(View view) {
         startActivity(new Intent(this, MenuActivity.class));
     }
+
 
     public void openBrowserSandBox() {
         String url = editText_url.getText().toString().trim();

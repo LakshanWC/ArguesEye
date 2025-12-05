@@ -1,15 +1,10 @@
 package com.wclw.argueseye;
 
 import android.content.Intent;
-import android.graphics.drawable.Animatable;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,12 +12,11 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-import java.lang.reflect.Array;
+import com.wclw.argueseye.helpers.CsvToBloomFilter;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Timer;
-import java.util.concurrent.Executors;
 
 public class SplashScreenActivity extends AppCompatActivity {
 

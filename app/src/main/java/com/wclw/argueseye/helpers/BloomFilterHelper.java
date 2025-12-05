@@ -1,10 +1,11 @@
-package com.wclw.argueseye;
+package com.wclw.argueseye.helpers;
 
 import android.content.Context;
 import android.widget.Toast;
 
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
+import com.wclw.argueseye.FilterType;
 
 import java.io.File;
 import java.io.FileInputStream;
