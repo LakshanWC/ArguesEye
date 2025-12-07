@@ -1,25 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/drawer_layout"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
-
-<androidx.constraintlayout.widget.ConstraintLayout
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity"
-    android:fitsSystemWindows="true"
-    android:background="@color/bg_primary">
+    android:background="@color/bg_primary"
+    android:fitsSystemWindows="true">
 
     <!-- Header with logo and title -->
     <LinearLayout
+        app:layout_constraintTop_toTopOf="parent"
         android:id="@+id/header"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="wrap_content"
         android:background="@color/bg_card"
         android:orientation="vertical">
 
@@ -38,7 +34,7 @@
                 android:layout_height="48dp"
                 android:layout_margin="10dp"
                 android:src="@drawable/shield_24px"
-                android:tint="@color/nice_blue"
+                app:tint= "@color/nice_blue"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:scaleType="fitCenter" />
 
@@ -49,7 +45,7 @@
                 android:layout_margin="10dp"
                 android:src="@drawable/more_horiz_24px"
                 android:onClick="goToMenu"
-                android:tint="@color/white"
+                app:tint ="@color/white"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:scaleType="fitCenter" />
         </LinearLayout>
@@ -147,14 +143,15 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:visibility="gone"/>
+
                 </LinearLayout>
 
 
                 <TextView
-                    android:id="@+id/tv_domain_details_status"
+                    android:id="@+id/tv_url_details_status"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Domain Details"
+                    android:text="URL Details"
                     android:textStyle="bold"
                     android:layout_marginTop="20dp"
                     android:textColor="@color/text_secondary"/>
@@ -164,7 +161,12 @@
                     android:id="@+id/domain_details_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:background="@drawable/nav_button_box"
+                    android:padding="16dp"
+                    android:layout_margin="12dp"
+                    android:elevation="4dp"
+                    android:gravity="center_horizontal">
 
                 <!-- Domain info -->
                 <TextView
@@ -252,11 +254,36 @@
                     android:textColor="@color/text_primary"
                     android:paddingBottom="12dp"/>
 
+                </LinearLayout>
+
+<!--    Domain information    -->
+
+                <TextView
+                    android:id="@+id/tv_domain_info_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Domain Information"
+                    android:textColor="@color/text_secondary"
+                    android:textStyle="bold"
+                    android:layout_marginTop="20dp"/>
+
+                <LinearLayout
+                    android:id="@+id/domain_info_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="@drawable/nav_button_box"
+                    android:padding="16dp"
+                    android:layout_margin="12dp"
+                    android:elevation="4dp"
+                    android:gravity="center_horizontal">
+
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="Date of Registration"
                         android:textStyle="bold"
+                        android:layout_marginTop="15dp"
                         android:textColor="@color/text_secondary"/>
                     <TextView
                         android:id="@+id/tv_registration_date"
@@ -289,8 +316,7 @@
                         android:layout_height="wrap_content"
                         android:paddingBottom="12dp"/>
 
-
-<!--    domain age section    -->
+                    <!--    domain age section    -->
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -328,6 +354,18 @@
                         android:paddingBottom="12dp"/>
 
                 </LinearLayout>
+
+<!--    Server Information    -->
+                <TextView
+                    android:visibility="gone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Server Information"
+                    android:layout_marginTop="15dp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_secondary"/>
+
+
 
                 <!-- SSL Certificate Info -->
                 <TextView
@@ -503,6 +541,7 @@
                     android:text="new details for now"
                     android:visibility="gone"/>
                 <LinearLayout
+                    android:orientation="vertical"
                     android:id="@+id/layout_whois_details"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
@@ -562,4 +601,3 @@
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-</androidx.drawerlayout.widget.DrawerLayout>

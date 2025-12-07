@@ -1,7 +1,9 @@
 package com.wclw.argueseye.helpers;
 
+import android.content.Context;
 import android.util.Log;
 import android.widget.Switch;
+import android.widget.Toast;
 
 import com.wclw.argueseye.dto.DomainTimeData;
 import com.wclw.argueseye.dto.RdapEvent;
@@ -25,6 +27,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class UrlInspectorHelper {
     private static final String RDAP_BASE_URL = "https://rdap.org/";
+    private long lastCallTime =0;
     private static final String TAG = "UrlInspectorHelper";
     private static UrlInspectorHelper instance;
     private Retrofit rdapRetrofit;
@@ -128,65 +131,75 @@ public class UrlInspectorHelper {
         }
     }
 
-    public void fetchWhois(String domain, retrofit2.Callback<RdapRespose> callback) {
+    public void fetchWhois(Context context, String domain, retrofit2.Callback<RdapRespose> callback) {
         Log.d(TAG, "Fetching RDAP data for domain: " + domain);
+        long nowTime = System.currentTimeMillis();
 
-        String tld = domain.substring(domain.lastIndexOf('.') + 1).toLowerCase();
-        Log.d(TAG, "Extracted TLD: " + tld);
-
-        String baseUrl;
-        switch (tld) {
-            case "com":
-            case "net":
-                baseUrl = "https://rdap.verisign.com/com/v1/";
-                break;
-            default:
-                callback.onFailure(null, new Throwable("Unsupported TLD: " + tld));
-                Log.e(TAG, "Unsupported TLD: " + tld);
-                return;
+        //stop flooding with request
+        if(nowTime-lastCallTime<2000){
+            Toast.makeText(context, "You are sending requests too quickly. Please wait a moment.", Toast.LENGTH_SHORT).show();
+            return;
         }
-        Log.d(TAG, "Using authoritative RDAP server: " + baseUrl);
 
-        OkHttpClient client = new OkHttpClient.Builder()
-                .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .writeTimeout(30, TimeUnit.SECONDS)
-                .build();
+        //update time
+        lastCallTime = nowTime;
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(baseUrl)
-                .client(client)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
+            String tld = domain.substring(domain.lastIndexOf('.') + 1).toLowerCase();
+            Log.d(TAG, "Extracted TLD: " + tld);
 
-        Log.d(TAG, "Retrofit instance created with base URL: " + baseUrl);
+            String baseUrl;
+            switch (tld) {
+                case "com":
+                case "net":
+                    baseUrl = "https://rdap.verisign.com/com/v1/";
+                    break;
+                default:
+                    callback.onFailure(null, new Throwable("Unsupported TLD: " + tld));
+                    Log.e(TAG, "Unsupported TLD: " + tld);
+                    return;
+            }
+            Log.d(TAG, "Using authoritative RDAP server: " + baseUrl);
 
-        WhoisApi whoisApi = retrofit.create(WhoisApi.class);
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .connectTimeout(30, TimeUnit.SECONDS)
+                    .readTimeout(30, TimeUnit.SECONDS)
+                    .writeTimeout(30, TimeUnit.SECONDS)
+                    .build();
 
-        long startTime = System.currentTimeMillis();
-        Log.d(TAG, "Enqueuing RDAP request for domain: " + domain);
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(baseUrl)
+                    .client(client)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
 
-        whoisApi.getWhois(domain).enqueue(new Callback<RdapRespose>() {
-            @Override
-            public void onResponse(Call<RdapRespose> call, Response<RdapRespose> response) {
-                long endTime = System.currentTimeMillis();
-                Log.d(TAG, "RDAP response received in " + (endTime - startTime) + " ms");
+            Log.d(TAG, "Retrofit instance created with base URL: " + baseUrl);
 
-                if (response.isSuccessful() && response.body() != null) {
-                    Log.d(TAG, "RDAP response successful for domain: " + domain);
-                    callback.onResponse(call, response);
-                } else {
-                    Log.e(TAG, "RDAP response failed or empty, code: " + response.code());
-                    callback.onFailure(call, new Throwable("Empty or failed response, code: " + response.code()));
+            WhoisApi whoisApi = retrofit.create(WhoisApi.class);
+
+            long startTime = System.currentTimeMillis();
+            Log.d(TAG, "Enqueuing RDAP request for domain: " + domain);
+
+            whoisApi.getWhois(domain).enqueue(new Callback<RdapRespose>() {
+                @Override
+                public void onResponse(Call<RdapRespose> call, Response<RdapRespose> response) {
+                    long endTime = System.currentTimeMillis();
+                    Log.d(TAG, "RDAP response received in " + (endTime - startTime) + " ms");
+
+                    if (response.isSuccessful() && response.body() != null) {
+                        Log.d(TAG, "RDAP response successful for domain: " + domain);
+                        callback.onResponse(call, response);
+                    } else {
+                        Log.e(TAG, "RDAP response failed or empty, code: " + response.code());
+                        callback.onFailure(call, new Throwable("Empty or failed response, code: " + response.code()));
+                    }
                 }
-            }
 
-            @Override
-            public void onFailure(Call<RdapRespose> call, Throwable t) {
-                long endTime = System.currentTimeMillis();
-                Log.e(TAG, "RDAP request failed for domain: " + domain + " after " + (endTime - startTime) + " ms", t);
-                callback.onFailure(call, t);
-            }
-        });
+                @Override
+                public void onFailure(Call<RdapRespose> call, Throwable t) {
+                    long endTime = System.currentTimeMillis();
+                    Log.e(TAG, "RDAP request failed for domain: " + domain + " after " + (endTime - startTime) + " ms", t);
+                    callback.onFailure(call, t);
+                }
+            });
     }
 }

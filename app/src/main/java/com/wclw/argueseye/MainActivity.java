@@ -7,12 +7,15 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.google.common.base.MoreObjects;
@@ -29,18 +32,22 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
-
-    private DrawerLayout drawer;
     private UrlParser urlParser;
     private EditText editText_url;
 
-    private LinearLayout domainDetails;
+    //containers
+    private LinearLayout urlDetailsLayout;
+    private LinearLayout domainInfoLayout;
     private LinearLayout sslCertLayout;
 
-    private TextView domainDetailsTV;
+    //container titles
+    private TextView urlDetailsTV;
+    private TextView domainInfoTV;
     private TextView sslCertificateStatusTV;
 
-    private boolean isDomainDetailsVisible = false;
+
+    private boolean isUrlDetailsVisible = false;
+    private boolean isDomainInfoVisible = false;
     private boolean isSSLDetailsVisible = false;
 
     // Cache these views once (used a lot)
@@ -50,16 +57,19 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        EdgeToEdge.enable(this);
 
         urlParser = new UrlParser();
 
-        drawer = findViewById(R.id.drawer_layout);
         editText_url = findViewById(R.id.editTxt_url);
-        domainDetails = findViewById(R.id.domain_details_container);
+        urlDetailsLayout = findViewById(R.id.domain_details_container);
+        domainInfoLayout = findViewById(R.id.domain_info_container);
         sslCertLayout = findViewById(R.id.ssl_cert_container);
 
-        domainDetailsTV = findViewById(R.id.tv_domain_details_status);
+        urlDetailsTV = findViewById(R.id.tv_url_details_status);
+        domainInfoTV = findViewById(R.id.tv_domain_info_status);
         sslCertificateStatusTV = findViewById(R.id.tv_ssl_certificate_status);
+
 
         tv_domain = findViewById(R.id.tv_domain);
         tv_subdomain = findViewById(R.id.tv_subdomain);
@@ -79,10 +89,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupExpandableSections() {
-        domainDetailsTV.setOnClickListener(v -> {
-            isDomainDetailsVisible = !isDomainDetailsVisible;
-            domainDetails.setVisibility(isDomainDetailsVisible ? View.VISIBLE : View.GONE);
-            updateArrow(domainDetailsTV);
+        urlDetailsTV.setOnClickListener(v -> {
+            isUrlDetailsVisible = !isUrlDetailsVisible;
+            urlDetailsLayout.setVisibility(isUrlDetailsVisible ? View.VISIBLE : View.GONE);
+            updateArrow(urlDetailsTV);
+        });
+
+        domainInfoTV.setOnClickListener(v->{
+            isDomainInfoVisible = !isDomainInfoVisible;
+            domainInfoLayout.setVisibility(isDomainInfoVisible? View.VISIBLE : View.GONE);
+            updateArrow(domainInfoTV);
         });
 
         sslCertificateStatusTV.setOnClickListener(v -> {
@@ -92,8 +108,10 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Start collapsed
-        domainDetails.setVisibility(View.GONE);
+        urlDetailsLayout.setVisibility(View.GONE);
+        domainInfoLayout.setVisibility(View.GONE);
         sslCertLayout.setVisibility(View.GONE);
+
     }
 
     private void updateArrow(TextView textView) {
@@ -106,8 +124,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void verifyUrl() {
+        Button btnVerifiy = findViewById(R.id.btn_verify);
+        btnVerifiy.setClickable(false);
+
         BloomFilterHelper.initialize(this);
         String url = editText_url.getText().toString().trim();
+
+
         if (TextUtils.isEmpty(url)) {
             Toast.makeText(this, "Please enter a URL", Toast.LENGTH_SHORT).show();
             return;
@@ -143,14 +166,13 @@ public class MainActivity extends AppCompatActivity {
             tv_scheme.setText(parts.scheme);
 
             // Reset expandable sections every time
-            domainDetailsTV.setText("Domain Details ▼");
-            isDomainDetailsVisible = false;
-            domainDetails.setVisibility(View.GONE);
-
+            urlDetailsTV.setText("URL Details ▼");
+            isUrlDetailsVisible = false;
+            urlDetailsLayout.setVisibility(View.GONE);
 
             loadRdapData(url);
-
-
+            domainInfoTV.setText("Domain Information ▼");
+            domainInfoLayout.setVisibility(View.GONE);
 
             if (parts.scheme.equalsIgnoreCase("https")) {
                 tv_cert_Stat.setVisibility(View.GONE);
@@ -168,6 +190,8 @@ public class MainActivity extends AppCompatActivity {
             tv_cert_Stat.setText("Invalid URL");
             tv_cert_Stat.setVisibility(View.VISIBLE);
         }
+
+        btnVerifiy.setClickable(true);
     }
 
     private void showCertificateDetails(String url) {
@@ -229,7 +253,7 @@ public class MainActivity extends AppCompatActivity {
         UrlParser.Parts urlParts = urlParser.parseUrl(url);
         String domain = urlParts.domain + "." + urlParts.tld;
 
-        UrlInspectorHelper.getInstance().fetchWhois(domain, new Callback<RdapRespose>() {
+        UrlInspectorHelper.getInstance().fetchWhois(this,domain, new Callback<RdapRespose>() {
             @Override
             public void onResponse(Call<RdapRespose> call, Response<RdapRespose> response) {
                 TextView tv_registor = findViewById(R.id.tv_registration_date);
