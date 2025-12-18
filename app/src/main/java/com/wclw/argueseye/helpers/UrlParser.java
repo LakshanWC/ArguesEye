@@ -1,5 +1,7 @@
 package com.wclw.argueseye.helpers;
 
+import com.wclw.argueseye.ApplicationSettings;
+
 import okhttp3.HttpUrl;
 
 public class UrlParser {
@@ -14,15 +16,28 @@ public class UrlParser {
         public String query;
     }
 
+    public String fixMissingProtocol(String url){
+        if (!url.contains("://")) {
+            // if url = www.example.com use what ever as settings
+
+            boolean stat = ApplicationSettings.getInstance().getIsHttpProtocol();
+
+            if(stat){
+                url = "http://" + url;
+            }
+            else{
+                url = "https://" + url;
+            }
+        }
+        return url;
+    }
+
     public Parts parseUrl(String url) {
         try {
 
             String originalUrl = url;
 
-            if (!url.contains("://")) {
-                // default to HTTP if url = www.example.com
-                url = "http://" + url;
-            }
+            url = fixMissingProtocol(url);
 
             HttpUrl httpUrl = HttpUrl.parse(url);
             Parts urlParts = new Parts();

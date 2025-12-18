@@ -55,6 +55,11 @@ public class SplashScreenActivity extends AppCompatActivity {
             return insets;
         });
 
+
+        //load saved application settings
+        ApplicationSettings.getInstance().load(this);
+
+
         first_row = findViewById(R.id.txt_first_row);
         second_row = findViewById(R.id.txt_second_row);
         third_row = findViewById(R.id.txt_third_row);

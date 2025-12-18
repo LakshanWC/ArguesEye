@@ -3,9 +3,11 @@ package com.wclw.argueseye;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,8 +25,12 @@ import com.wclw.argueseye.dto.DomainTimeData;
 import com.wclw.argueseye.dto.RdapRespose;
 import com.wclw.argueseye.helpers.BloomFilterHelper;
 import com.wclw.argueseye.helpers.CertificateChecker;
+import com.wclw.argueseye.helpers.DatabaseHelper;
+import com.wclw.argueseye.helpers.RedirectionCheckHelper;
 import com.wclw.argueseye.helpers.UrlInspectorHelper;
 import com.wclw.argueseye.helpers.UrlParser;
+
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -32,22 +38,29 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
+    private DatabaseHelper databaseHelper;
+    private ApplicationSettings applicationSettings;
     private UrlParser urlParser;
     private EditText editText_url;
+
+    private String interseptedUrl;
 
     //containers
     private LinearLayout urlDetailsLayout;
     private LinearLayout domainInfoLayout;
+    private LinearLayout redirectionChainLayout;
     private LinearLayout sslCertLayout;
 
     //container titles
     private TextView urlDetailsTV;
     private TextView domainInfoTV;
+    private TextView redirectionChainTV;
     private TextView sslCertificateStatusTV;
 
 
     private boolean isUrlDetailsVisible = false;
     private boolean isDomainInfoVisible = false;
+    private boolean isRedirectionChainVisible = false;
     private boolean isSSLDetailsVisible = false;
 
     // Cache these views once (used a lot)
@@ -59,16 +72,31 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         EdgeToEdge.enable(this);
 
+        Intent interseptIntent = getIntent();
+
+        if(interseptIntent != null && interseptIntent.hasExtra("url")){
+            interseptedUrl = interseptIntent.getStringExtra("url");
+
+            if(interseptedUrl !=null || interseptedUrl.isEmpty()){
+
+                editText_url.setText(interseptedUrl);
+                verifyUrl();
+            }
+        }
+
+
         urlParser = new UrlParser();
 
         editText_url = findViewById(R.id.editTxt_url);
         urlDetailsLayout = findViewById(R.id.domain_details_container);
         domainInfoLayout = findViewById(R.id.domain_info_container);
+        redirectionChainLayout = findViewById(R.id.redirection_chain_container);
         sslCertLayout = findViewById(R.id.ssl_cert_container);
 
         urlDetailsTV = findViewById(R.id.tv_url_details_status);
         domainInfoTV = findViewById(R.id.tv_domain_info_status);
         sslCertificateStatusTV = findViewById(R.id.tv_ssl_certificate_status);
+        redirectionChainTV = findViewById(R.id.tv_redirection_info_status);
 
 
         tv_domain = findViewById(R.id.tv_domain);
@@ -101,6 +129,12 @@ public class MainActivity extends AppCompatActivity {
             updateArrow(domainInfoTV);
         });
 
+        redirectionChainTV.setOnClickListener(v->{
+            isRedirectionChainVisible = !isRedirectionChainVisible;
+            redirectionChainLayout.setVisibility(isRedirectionChainVisible? View.VISIBLE : View.GONE);
+            updateArrow(redirectionChainTV);
+        });
+
         sslCertificateStatusTV.setOnClickListener(v -> {
             isSSLDetailsVisible = !isSSLDetailsVisible;
             sslCertLayout.setVisibility(isSSLDetailsVisible ? View.VISIBLE : View.GONE);
@@ -110,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
         // Start collapsed
         urlDetailsLayout.setVisibility(View.GONE);
         domainInfoLayout.setVisibility(View.GONE);
+        redirectionChainLayout.setVisibility(View.GONE);
         sslCertLayout.setVisibility(View.GONE);
 
     }
@@ -127,15 +162,18 @@ public class MainActivity extends AppCompatActivity {
         Button btnVerifiy = findViewById(R.id.btn_verify);
         btnVerifiy.setClickable(false);
 
+        redirectionChainLayout.removeAllViews();
+
         BloomFilterHelper.initialize(this);
         String url = editText_url.getText().toString().trim();
-
 
         if (TextUtils.isEmpty(url)) {
             Toast.makeText(this, "Please enter a URL", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        editText_url.setText(urlParser.fixMissingProtocol(url));
+        url = editText_url.getText().toString().trim(); //apply the fixed url
 
         FilterType type = BloomFilterHelper.checkFilter(url);
         UrlParser.Parts parts = urlParser.parseUrl(url);
@@ -156,6 +194,8 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
 
+        checkBlockedList(url);
+
         if (parts != null) {
             // Fill URL parts
             tv_domain.setText(parts.domain + "." + parts.tld);
@@ -169,6 +209,11 @@ public class MainActivity extends AppCompatActivity {
             urlDetailsTV.setText("URL Details ▼");
             isUrlDetailsVisible = false;
             urlDetailsLayout.setVisibility(View.GONE);
+
+//            showRedirectionOnUI(url);
+            redirectionChainTV.setText("Redirection Chain ▼");
+            isRedirectionChainVisible = false;
+            redirectionChainLayout.setVisibility(View.GONE);
 
             loadRdapData(url);
             domainInfoTV.setText("Domain Information ▼");
@@ -314,6 +359,29 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void showRedirectionOnUI(String url){
+        List<String> redirectionList;
+
+        if(RedirectionCheckHelper.getRedirectionChain(url) != null){
+
+            redirectionList = RedirectionCheckHelper.getRedirectionChain(url);
+
+            for (String item: redirectionList) {
+
+                TextView textView = new TextView(this);
+                textView.setText(item);
+                textView.setPadding(0,0,0,12);
+
+                redirectionChainLayout.addView(textView);
+                 Log.d("MYTEST",item);
+            }
+        }
+        else{
+            TextView textView = new TextView(this);
+            textView.setText("No Redirections found");
+            redirectionChainLayout.addView(textView);
+        }
+    }
 
 
 
@@ -346,6 +414,14 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Toast.makeText(this, "No web browser installed!", Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void checkBlockedList(String url){
+
+        TextView textView = findViewById(R.id.tv_risk_level);
+        databaseHelper = DatabaseHelper.getInstance(this);
+
+        if(databaseHelper.onBlockList(url)){ textView.setText("Found in Blocked Urls");}
     }
 
 

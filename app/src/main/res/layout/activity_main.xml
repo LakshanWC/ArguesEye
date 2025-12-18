@@ -355,15 +355,29 @@
 
                 </LinearLayout>
 
-<!--    Server Information    -->
+<!--    redirection chain Information    -->
                 <TextView
                     android:visibility="gone"
+                    android:id="@+id/tv_redirection_info_status"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Server Information"
+                    android:text="Redirection Chain"
                     android:layout_marginTop="15dp"
                     android:textStyle="bold"
                     android:textColor="@color/text_secondary"/>
+
+                <LinearLayout
+                    android:id="@+id/redirection_chain_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:background="@drawable/nav_button_box"
+                    android:padding="16dp"
+                    android:layout_margin="12dp"
+                    android:elevation="4dp">
+
+                </LinearLayout>
 
 
 

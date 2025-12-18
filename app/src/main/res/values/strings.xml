@@ -1,4 +1,11 @@
 <resources>
     <string name="app_name">ArguesEye</string>
     <string name="app_version">Version 0.0.0.1</string>
+    <string name="accessibility_service_name">This is a place holder name</string>
+    <string name="accessibility_service_description">
+        ArguesEye needs Accessibility access to detect when you tap any link in any app
+        (WhatsApp, Telegram, SMS, etc.) and protect you from phishing, malware, and dangerous sites.\n\n
+    • We do NOT read your messages\n
+    • We only analyze clicked URLs\n
+    • You can disable this anytime in Settings</string>
 </resources>
