@@ -1,7 +1,10 @@
 package com.wclw.argueseye;
 
+//import io.github.edsuns.adfilter.AdFilter;
+
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -12,11 +15,15 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.wclw.argueseye.helpers.AdFilterDownloadHelper;
 import com.wclw.argueseye.helpers.CsvToBloomFilter;
+import com.wclw.argueseye.services.AdBlockerService;
+import com.wclw.argueseye.services.EasyListParser;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 
 public class SplashScreenActivity extends AppCompatActivity {
 
@@ -40,7 +47,9 @@ public class SplashScreenActivity extends AppCompatActivity {
             "Preparing Bloom filters for trusted websites...",
             "Trusted filter built successfully",
             "Preparing Bloom filters for untrusted websites...",
-            "Untrusted filter built successfully"
+            "Untrusted filter built successfully",
+            "Initializing ad-blocking engine...",
+            "Ad-blocking engine ready"
     ));
 
 
@@ -48,6 +57,7 @@ public class SplashScreenActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
+
         setContentView(R.layout.activity_splash_screen);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -74,7 +84,7 @@ public class SplashScreenActivity extends AppCompatActivity {
 //        start_animations();
 
          findViewById(R.id.btn_skip_button).setOnClickListener(view->skipBuilding());
-         findViewById(R.id.btn_build_button).setOnClickListener(view -> skipBuilding());
+         findViewById(R.id.btn_build_button).setOnClickListener(view -> startBuilding());
     }
 
 
@@ -90,34 +100,42 @@ public class SplashScreenActivity extends AppCompatActivity {
         loadTextByEachCharater(messageList.get(0), first_row, () -> {
 
             boolean trustedOk = buildTrustedFilter();
-            String second = trustedOk ? messageList.get(1) : "Build Failed";
+            String second = trustedOk ? messageList.get(1) : "Trusted filter build failed";
 
             loadTextByEachCharater(second, second_row, () -> {
 
                 loadTextByEachCharater(messageList.get(2), third_row, () -> {
 
                     boolean untrustedOk = buildUntrustedFilter();
-                    String fourth = untrustedOk ? messageList.get(3) : "Build Failed";
+                    String fourth = untrustedOk ? messageList.get(3) : "Untrusted filter build failed";
 
                     loadTextByEachCharater(fourth, fourth_row, () -> {
 
-                        if (trustedOk && untrustedOk) {
-                            loadTextByEachCharater(
-                                    "All modules operational. Initializing application...",
-                                    fifth_row,
+                        loadTextByEachCharater(messageList.get(4), fifth_row, () -> {
+
+                            buildAdBlockBloomFilters(
                                     () -> {
-                                        Intent redirectIntent = new Intent(this, MainActivity.class);
-                                        startActivity(redirectIntent);
+                                        loadTextByEachCharater(
+                                                messageList.get(5),
+                                                fifth_row,
+                                                () -> startActivity(
+                                                        new Intent(this, MainActivity.class)
+                                                )
+                                        );
+                                    },
+                                    () -> {
+                                        loadTextByEachCharater(
+                                                "Ad-blocking engine failed to initialize",
+                                                fifth_row,
+                                                null
+                                        );
                                     }
                             );
-                        }
 
+                        });
                     });
-
                 });
-
             });
-
         });
     }
 
@@ -161,5 +179,20 @@ public class SplashScreenActivity extends AppCompatActivity {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private void buildAdBlockBloomFilters(Runnable onSuccess,Runnable onFailure){
+        new Thread(()->{
+            try{
+                String lists = AdFilterDownloadHelper.downloadAll();
+                List<AdRule> rules = EasyListParser.parse(lists);
+                AdBlockerService.getInstance().init(rules);
+                Log.d("SplashScreen","adbockFilter build success");
+                runOnUiThread(onSuccess);
+            } catch (Exception e) {
+                Log.d("SplashScreen","Error"+e.getMessage());
+                runOnUiThread(onFailure);
+            }
+        }).start();
     }
 }

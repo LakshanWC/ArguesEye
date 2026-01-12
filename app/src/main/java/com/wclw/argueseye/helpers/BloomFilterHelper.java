@@ -65,9 +65,6 @@ public class BloomFilterHelper {
         }
     }
 
-    // ------------------------------------------------------------
-    // BOOLEAN QUERY
-    // ------------------------------------------------------------
     public static boolean mightContain(String value, boolean isTrusted) {
         BloomFilter<String> filter = isTrusted ? trustedFilter : untrustedFilter;
         if (filter == null) return false; // Not loaded yet

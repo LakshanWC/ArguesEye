@@ -13,12 +13,24 @@ import java.time.LocalDateTime;
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static DatabaseHelper instance;
     private final static String DB_NAME = "ArgouesDb";
+
     private final static int DB_VERSION = 1;
     private final static String TABLE_NAME ="BlockList";
+    private final static String SCAN_TABLE ="ScanHistory";
 
     private final static String ID_COL ="id";
     private final static String URL_COL="url";
     private final static String DATE_COL ="date";
+
+    private final static String ID_COL_SCAN_TBL ="id";
+    private final static String URL_COL_SCAN_TBL ="url";
+    private final static String DATE_COL_SCAN_TBL ="date";
+
+
+
+
+
+
 
     public DatabaseHelper(Context context){
         super(context,DB_NAME,null,DB_VERSION);
@@ -39,7 +51,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + URL_COL +" TEXT,"
                 + DATE_COL +" TEXT)";
 
+        String scanHistoryTablequery = "CREAT TABLE "+ SCAN_TABLE+"("
+                + ID_COL_SCAN_TBL +" INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + URL_COL_SCAN_TBL +" TEXT,"
+                + DATE_COL +" TEXT)";
+
         sqLiteDatabase.execSQL(creationQuery);
+        sqLiteDatabase.execSQL(scanHistoryTablequery);
     }
 
     public void addNewItem(String url){

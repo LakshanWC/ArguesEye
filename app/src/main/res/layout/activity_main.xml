@@ -548,17 +548,28 @@
                         android:paddingBottom="8dp"/>
 
                 </LinearLayout>
-<!--WHOIS details-->
+<!-- website Image-->
                 <TextView
+                    android:id="@+id/tv_website_image_status"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="new details for now"
-                    android:visibility="gone"/>
+                    android:text="Website Preview"
+                    android:textColor="@color/text_secondary"
+                    android:textStyle="bold"
+                    android:layout_marginTop="16dp"/>
                 <LinearLayout
                     android:orientation="vertical"
-                    android:id="@+id/layout_whois_details"
+                    android:id="@+id/website_image_container"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:id="@+id/iv_website_image"
+                        android:layout_marginTop="10dp"
+                        android:src="@color/white"
+                        android:layout_width="match_parent"
+                        android:layout_height="250dp"/>
 
                 </LinearLayout>
 

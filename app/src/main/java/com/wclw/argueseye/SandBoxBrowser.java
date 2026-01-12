@@ -11,6 +11,7 @@ import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -30,6 +31,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.materialswitch.MaterialSwitch;
+import com.wclw.argueseye.services.AdBlockerService;
 
 public class SandBoxBrowser extends AppCompatActivity {
 
@@ -42,6 +44,8 @@ public class SandBoxBrowser extends AppCompatActivity {
     private boolean jsEnabled = false;
     private boolean imagesEnabled = true;
     private boolean locationEnabled = false;
+
+    private boolean adBlockerOn = true;
     private boolean popupBlocked = true;
 
     private boolean blockThirdPartyCookies = true;
@@ -71,6 +75,27 @@ public class SandBoxBrowser extends AppCompatActivity {
 
 
         sandBox.setWebViewClient(new WebViewClient() {
+
+            @Override
+            public WebResourceResponse shouldInterceptRequest(
+                    WebView webView,
+                    WebResourceRequest request){
+
+                String url = request.getUrl().toString();
+
+                if(AdBlockerService.getInstance().isAd(url)){
+                    return new WebResourceResponse(
+                            "text/plain",
+                            "utf-8",
+                            null
+                    );
+                }
+                return super.shouldInterceptRequest(webView,request);
+            }
+
+
+
+
             @Override
             public void onPageFinished(WebView view, String url) {
                 swipeRefresh.setRefreshing(false);
@@ -156,6 +181,7 @@ public class SandBoxBrowser extends AppCompatActivity {
         MaterialSwitch switchJs           = dialogView.findViewById(R.id.switch_js);
         MaterialSwitch switchImages       = dialogView.findViewById(R.id.switch_images);
         MaterialSwitch switchLocation     = dialogView.findViewById(R.id.switch_location);
+        MaterialSwitch switchAdBlocker    = dialogView.findViewById(R.id.switch_adblocker);
         MaterialSwitch switchPopupBlock   = dialogView.findViewById(R.id.switch_popup_block);
         MaterialSwitch switch3rdCookies   = dialogView.findViewById(R.id.switch_third_party_cookies);
         MaterialSwitch switchSpoofUA      = dialogView.findViewById(R.id.switch_spoof_ua);
@@ -166,6 +192,7 @@ public class SandBoxBrowser extends AppCompatActivity {
         switchJs.setChecked(jsEnabled);
         switchImages.setChecked(imagesEnabled);
         switchLocation.setChecked(locationEnabled);
+        switchAdBlocker.setChecked(adBlockerOn);
         switchPopupBlock.setChecked(popupBlocked);
         switch3rdCookies.setChecked(blockThirdPartyCookies);
         switchSpoofUA.setChecked(spoofUserAgent);
@@ -189,6 +216,7 @@ public class SandBoxBrowser extends AppCompatActivity {
                 jsEnabled = switchJs.isChecked();
                 imagesEnabled = switchImages.isChecked();
                 locationEnabled = switchLocation.isChecked();
+                adBlockerOn = switchAdBlocker.isChecked();
                 popupBlocked = switchPopupBlock.isChecked();
                 blockThirdPartyCookies = switch3rdCookies.isChecked();
                 spoofUserAgent = switchSpoofUA.isChecked();
@@ -200,7 +228,6 @@ public class SandBoxBrowser extends AppCompatActivity {
 //                if (v == btnReload) sandBox.reload();
 //                reload after applying automaticly
                 sandBox.reload();
-
 
                 dialog.dismiss();
             };
@@ -236,14 +263,6 @@ public class SandBoxBrowser extends AppCompatActivity {
         s.setUserAgentString(ua);
 
 
-        //there seems to be a error related to these there for temp commented these lines
-        // No-referrer (AndroidX API)
-//        if (WebViewFeature.isFeatureSupported(WebViewFeature.REFERRER_POLICY) && noReferrer) {
-//            WebSettingsCompat.setReferrerPolicy(
-//                    s,
-//                    WebSettingsCompat.REFERRER_POLICY_NO_REFERRER
-//            );
-//        }
 
         updatePopupBlocking();
     }

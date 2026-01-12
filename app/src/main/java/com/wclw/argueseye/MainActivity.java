@@ -11,6 +11,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,15 +21,19 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.bumptech.glide.Glide;
 import com.google.common.base.MoreObjects;
 import com.wclw.argueseye.dto.DomainTimeData;
 import com.wclw.argueseye.dto.RdapRespose;
+import com.wclw.argueseye.dto.UrlScanResponse;
+import com.wclw.argueseye.helpers.ArguesEyeAPIHelper;
 import com.wclw.argueseye.helpers.BloomFilterHelper;
 import com.wclw.argueseye.helpers.CertificateChecker;
 import com.wclw.argueseye.helpers.DatabaseHelper;
 import com.wclw.argueseye.helpers.RedirectionCheckHelper;
 import com.wclw.argueseye.helpers.UrlInspectorHelper;
 import com.wclw.argueseye.helpers.UrlParser;
+import com.wclw.argueseye.helpers.UrlScanCallBack;
 
 import java.util.List;
 
@@ -40,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
     private DatabaseHelper databaseHelper;
     private ApplicationSettings applicationSettings;
+    private ArguesEyeAPIHelper arguesEyeAPIHelper = new ArguesEyeAPIHelper();
     private UrlParser urlParser;
     private EditText editText_url;
 
@@ -50,18 +56,21 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout domainInfoLayout;
     private LinearLayout redirectionChainLayout;
     private LinearLayout sslCertLayout;
+    private LinearLayout websitePreviewLayout;
 
     //container titles
     private TextView urlDetailsTV;
     private TextView domainInfoTV;
     private TextView redirectionChainTV;
     private TextView sslCertificateStatusTV;
+    private TextView websitePreviewStatusTV;
 
 
     private boolean isUrlDetailsVisible = false;
     private boolean isDomainInfoVisible = false;
     private boolean isRedirectionChainVisible = false;
     private boolean isSSLDetailsVisible = false;
+    private boolean isWebsitePreviewVisible = false;
 
     // Cache these views once (used a lot)
     private TextView tv_domain, tv_subdomain, tv_tld, tv_path, tv_query, tv_scheme;
@@ -92,11 +101,13 @@ public class MainActivity extends AppCompatActivity {
         domainInfoLayout = findViewById(R.id.domain_info_container);
         redirectionChainLayout = findViewById(R.id.redirection_chain_container);
         sslCertLayout = findViewById(R.id.ssl_cert_container);
+        websitePreviewLayout = findViewById(R.id.website_image_container);
 
         urlDetailsTV = findViewById(R.id.tv_url_details_status);
         domainInfoTV = findViewById(R.id.tv_domain_info_status);
         sslCertificateStatusTV = findViewById(R.id.tv_ssl_certificate_status);
         redirectionChainTV = findViewById(R.id.tv_redirection_info_status);
+        websitePreviewStatusTV = findViewById(R.id.tv_website_image_status);
 
 
         tv_domain = findViewById(R.id.tv_domain);
@@ -141,11 +152,18 @@ public class MainActivity extends AppCompatActivity {
             updateArrow(sslCertificateStatusTV);
         });
 
+        websitePreviewStatusTV.setOnClickListener(v ->{
+            isWebsitePreviewVisible = !isWebsitePreviewVisible;
+            websitePreviewLayout.setVisibility(isWebsitePreviewVisible? View.VISIBLE : View.GONE);
+            updateArrow(websitePreviewStatusTV);
+        });
+
         // Start collapsed
         urlDetailsLayout.setVisibility(View.GONE);
         domainInfoLayout.setVisibility(View.GONE);
         redirectionChainLayout.setVisibility(View.GONE);
         sslCertLayout.setVisibility(View.GONE);
+        websitePreviewLayout.setVisibility(View.GONE);
 
     }
 
@@ -235,6 +253,9 @@ public class MainActivity extends AppCompatActivity {
             tv_cert_Stat.setText("Invalid URL");
             tv_cert_Stat.setVisibility(View.VISIBLE);
         }
+
+        //call api and load the image
+        getWebsiteImage(editText_url.getText().toString());
 
         btnVerifiy.setClickable(true);
     }
@@ -359,6 +380,42 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void getWebsiteImage(String webUrl){
+        ImageView imageView = findViewById(R.id.iv_website_image);
+
+        arguesEyeAPIHelper.sendRequest(webUrl, new UrlScanCallBack() {
+            @Override
+            public void onSuccess(UrlScanResponse urlScanResponse) {
+                runOnUiThread(()->{
+                   String imageUrl = "https://urlscan.io/screenshots/"
+                           +urlScanResponse.scan.uuid
+                           +".png";
+
+                   Glide.with(MainActivity.this)
+                            .load("https://urlscan.io/screenshots/"+urlScanResponse.scan.uuid+".png")
+                            .placeholder(R.drawable.nav_button_box)
+                            .error(R.drawable.ic_launcher_background)
+                            .into(imageView);
+                });
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                runOnUiThread(()->{
+                    Glide.with(MainActivity.this)
+                            .load(R.drawable.badge_strict_mode)
+                            .placeholder(R.drawable.nav_button_box)
+                            .error(R.drawable.ic_launcher_background)
+                            .into(imageView);
+                });
+            }
+        });
+
+    }
+
+
+    //TODO this method logic need to be checked
+/*
     private void showRedirectionOnUI(String url){
         List<String> redirectionList;
 
@@ -382,7 +439,7 @@ public class MainActivity extends AppCompatActivity {
             redirectionChainLayout.addView(textView);
         }
     }
-
+*/
 
 
     private void continueToBrowser() {

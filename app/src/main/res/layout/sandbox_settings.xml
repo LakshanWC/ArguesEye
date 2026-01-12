@@ -39,6 +39,16 @@
             android:layout_marginBottom="12dp"/>
 
         <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/switch_adblocker"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="AdBlocker"
+            android:checked="true"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:layout_marginBottom="12dp"/>
+
+        <com.google.android.material.materialswitch.MaterialSwitch
             android:id="@+id/switch_popup_block"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
