@@ -28,10 +28,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
 
-
-
-
-
     public DatabaseHelper(Context context){
         super(context,DB_NAME,null,DB_VERSION);
     }
@@ -43,7 +39,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return instance;
     }
 
-
     @Override
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         String creationQuery = "CREATE TABLE "+TABLE_NAME+"("
@@ -51,7 +46,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + URL_COL +" TEXT,"
                 + DATE_COL +" TEXT)";
 
-        String scanHistoryTablequery = "CREAT TABLE "+ SCAN_TABLE+"("
+        String scanHistoryTablequery = "CREATE TABLE "+ SCAN_TABLE+"("
                 + ID_COL_SCAN_TBL +" INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + URL_COL_SCAN_TBL +" TEXT,"
                 + DATE_COL +" TEXT)";
@@ -76,6 +71,28 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         }catch (Exception e){
             Log.d("DatabaseHelper", e.getMessage());
+        }
+    }
+
+    public Cursor getBlockList(){
+        SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
+        Cursor cursor = null;
+
+        try{
+
+            return sqLiteDatabase.query(
+                    TABLE_NAME,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    DATE_COL + " DESC"
+            );
+
+        }catch (Exception e){
+            Log.d("DatabaseHelper","Error"+e.getMessage());
+            return cursor;
         }
     }
 

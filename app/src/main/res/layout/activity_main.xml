@@ -81,31 +81,6 @@
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/txtView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="18sp"
-                android:text="URL: "
-                android:layout_marginEnd="4dp"/>
-
-            <EditText
-                android:id="@+id/editTxt_url"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Paste your link here"
-                android:inputType="textUri"
-                android:padding="8dp"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_verify"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:backgroundTint="@color/nice_blue"
-                android:textColor="@color/white"
-                android:text="Verify"
-                android:layout_marginStart="8dp"/>
         </LinearLayout>
 
         <!-- Scrollable content -->
@@ -577,15 +552,145 @@
         </ScrollView>
     </LinearLayout>
 
-    <!-- Footer buttons -->
-    <LinearLayout
-        android:id="@+id/footer"
+
+    <!-- FAB MENU CONTAINER -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/fab_menu_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@id/bottom_action_bar_card"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:elevation="20dp">
+
+        <!-- Dim overlay -->
+        <View
+            android:id="@+id/dim_overlay"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="#80000000"
+            android:visibility="gone"
+            android:clickable="true"
+            android:focusable="true"
+
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Parent FAB btn-->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btn_fab_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="24dp"
+            android:layout_marginBottom="150dp"
+            android:src="@drawable/visibility_ic"
+            app:backgroundTint="@color/serenity_blue"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+<!--has all the buttons inside the FAB--><LinearLayout
+        android:id="@+id/fab_menu_items_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintEnd_toEndOf="@id/btn_fab_parent"
+        app:layout_constraintBottom_toTopOf="@id/btn_fab_parent">
+
+        <!-- Open Sandbox -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp"
+            android:layout_marginRight="10dp">
+
+            <TextView
+                android:id="@+id/tv_fab_open_sandbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Open Sandbox"
+                android:textColor="@android:color/white"
+                android:textSize="14sp"
+                android:paddingEnd="8dp"/>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btn_fab_open_sandBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/security_ic"/>
+        </LinearLayout>
+
+        <!-- Continue -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp"
+            android:layout_marginLeft="35dp">
+
+            <TextView
+                android:id="@+id/tv_fab_continue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Continue"
+                android:textColor="@android:color/white"
+                android:textSize="14sp"
+                android:paddingEnd="8dp"/>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btn_fab_continue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/warning_ic"/>
+        </LinearLayout>
+
+        <!-- Block -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp"
+            android:layout_marginLeft="55dp">
+
+            <TextView
+                android:id="@+id/tv_fab_block"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Block"
+                android:textColor="@android:color/white"
+                android:textSize="14sp"
+                android:paddingEnd="8dp"/>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btn_fab_block"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/cancel_24px"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+    <!-- Footer / Bottom Action Bar -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/bottom_action_bar_card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/bg_card"
-        android:padding="10dp"
-        android:layout_marginBottom="10dp"
-        android:orientation="vertical"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="24dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="10dp"
+        app:cardBackgroundColor="@color/bg_card"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -593,36 +698,108 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:background="@drawable/rounded_input_bg">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_block"
-                android:layout_width="0dp"
+            <!-- Input + Verify - always visible -->
+            <LinearLayout
+                android:id="@+id/input_section"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:backgroundTint="@color/btn_block"
-                android:textColor="@color/white"
-                android:text="Block Url"/>
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="6dp">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_continue"
-                android:layout_width="0dp"
+                <ImageView
+                    android:id="@+id/btn_clear_url"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/cancel_24px"
+                    app:tint="@color/text_secondary"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:visibility="gone" />
+
+                <EditText
+                    android:id="@+id/editTxt_url"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="56dp"
+                    android:hint="Paste or type URL here..."
+                    android:background="@null"
+                    android:paddingHorizontal="12dp"
+                    android:textSize="16sp"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:inputType="textUri" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_verify"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:minWidth="100dp"
+                    android:text="Verify"
+                    android:textSize="15sp"
+                    android:paddingHorizontal="24dp"
+                    android:backgroundTint="@color/nice_blue" />
+            </LinearLayout>
+
+            <!-- Action buttons - appear below input when visible -->
+            <LinearLayout
+                android:id="@+id/action_btn_container"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="10dp"
-                android:textColor="@color/white"
-                android:backgroundTint="@color/btn_continue_anyway"
-                android:text="Continue Any Way"/>
+                android:layout_marginTop="20dp"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <!-- Block + Continue side by side -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_block"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="56dp"
+                        android:layout_weight="1"
+                        android:text="Block"
+                        android:textColor="@color/btn_block"
+                        app:icon="@drawable/block_ic"
+                        app:iconGravity="textStart"
+                        app:iconTint="@color/btn_block"
+                        app:strokeColor="@color/btn_block" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_continue"
+                        android:layout_width="0dp"
+                        android:layout_height="56dp"
+                        android:layout_marginStart="12dp"
+                        android:layout_weight="1"
+                        android:backgroundTint="@color/btn_continue_anyway"
+                        android:text="Continue"
+                        app:icon="@drawable/warning_ic"
+                        app:iconGravity="textStart"
+                        app:iconTint="@color/white" />
+                </LinearLayout>
+
+                <!-- Sandbox button - full width -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_open_sandbox"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="16dp"
+                    android:backgroundTint="@color/btn_sandbox"
+                    android:text="Open in Sandbox Environment"
+                    app:icon="@drawable/security_ic"
+                    app:iconGravity="textStart"
+                    app:iconTint="@color/white" />
+            </LinearLayout>
+
         </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_open_sandbox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:textColor="@color/white"
-            android:backgroundTint="@color/btn_sandbox"
-            android:text="Open in Sandbox Environment"/>
-    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

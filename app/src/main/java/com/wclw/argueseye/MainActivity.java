@@ -18,6 +18,7 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -50,8 +51,16 @@ public class MainActivity extends AppCompatActivity {
     private EditText editText_url;
 
     private String interseptedUrl;
+    private Button btn_block;
+
+
+    //For FAB button
+    private Button btnFabParent;
+    private View dimOverlay;
+    private LinearLayout fabMenuLayout;
 
     //containers
+    private LinearLayout actionBtnLayout;
     private LinearLayout urlDetailsLayout;
     private LinearLayout domainInfoLayout;
     private LinearLayout redirectionChainLayout;
@@ -96,12 +105,16 @@ public class MainActivity extends AppCompatActivity {
 
         urlParser = new UrlParser();
 
+        actionBtnLayout = findViewById(R.id.action_btn_container);
         editText_url = findViewById(R.id.editTxt_url);
         urlDetailsLayout = findViewById(R.id.domain_details_container);
         domainInfoLayout = findViewById(R.id.domain_info_container);
         redirectionChainLayout = findViewById(R.id.redirection_chain_container);
         sslCertLayout = findViewById(R.id.ssl_cert_container);
         websitePreviewLayout = findViewById(R.id.website_image_container);
+        btn_block = findViewById(R.id.btn_block);
+        dimOverlay = findViewById(R.id.dim_overlay);
+        fabMenuLayout = findViewById(R.id.fab_menu_items_container);
 
         urlDetailsTV = findViewById(R.id.tv_url_details_status);
         domainInfoTV = findViewById(R.id.tv_domain_info_status);
@@ -121,10 +134,29 @@ public class MainActivity extends AppCompatActivity {
         setupExpandableSections();
 
         findViewById(R.id.btn_verify).setOnClickListener(v -> verifyUrl());
-        findViewById(R.id.btn_continue).setOnClickListener(v->continueToBrowser());
-        findViewById(R.id.btn_open_sandbox).setOnClickListener(v->openBrowserSandBox());
+        findViewById(R.id.btn_fab_block).setOnClickListener(v->{
+            if(!editText_url.getText().isEmpty()) {
+                databaseHelper = DatabaseHelper.getInstance(this);
+                databaseHelper.addNewItem(editText_url.getText().toString());
+            }
+        });
+        findViewById(R.id.btn_fab_continue).setOnClickListener(v->continueToBrowser());
+        findViewById(R.id.btn_fab_open_sandBox).setOnClickListener(v->openBrowserSandBox());
+        findViewById(R.id.btn_fab_parent).setOnClickListener(v->showFabMenu());
+        dimOverlay.setOnClickListener(v->hideFabMenu());
 
 //        BloomFilterHelper.initialize(this);
+
+    }
+
+    private void showFabMenu(){
+        dimOverlay.setVisibility(View.VISIBLE);
+        fabMenuLayout.setVisibility(View.VISIBLE);
+    }
+
+    private void hideFabMenu(){
+        dimOverlay.setVisibility(View.GONE);
+        fabMenuLayout.setVisibility(View.GONE);
     }
 
     private void setupExpandableSections() {
@@ -258,6 +290,8 @@ public class MainActivity extends AppCompatActivity {
         getWebsiteImage(editText_url.getText().toString());
 
         btnVerifiy.setClickable(true);
+
+        actionBtnLayout.setVisibility(View.VISIBLE);
     }
 
     private void showCertificateDetails(String url) {

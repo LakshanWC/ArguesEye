@@ -83,8 +83,9 @@ public class SplashScreenActivity extends AppCompatActivity {
 
 //        start_animations();
 
+        // FOR DEBUGING
          findViewById(R.id.btn_skip_button).setOnClickListener(view->skipBuilding());
-         findViewById(R.id.btn_build_button).setOnClickListener(view -> startBuilding());
+//         findViewById(R.id.btn_build_button).setOnClickListener(view -> startBuilding());
     }
 
 
@@ -113,24 +114,24 @@ public class SplashScreenActivity extends AppCompatActivity {
 
                         loadTextByEachCharater(messageList.get(4), fifth_row, () -> {
 
-                            buildAdBlockBloomFilters(
-                                    () -> {
-                                        loadTextByEachCharater(
-                                                messageList.get(5),
-                                                fifth_row,
-                                                () -> startActivity(
-                                                        new Intent(this, MainActivity.class)
-                                                )
-                                        );
-                                    },
-                                    () -> {
-                                        loadTextByEachCharater(
-                                                "Ad-blocking engine failed to initialize",
-                                                fifth_row,
-                                                null
-                                        );
-                                    }
-                            );
+//                            buildAdBlockBloomFilters(
+//                                    () -> {
+//                                        loadTextByEachCharater(
+//                                                messageList.get(5),
+//                                                fifth_row,
+//                                                () -> startActivity(
+//                                                        new Intent(this, MainActivity.class)
+//                                                )
+//                                        );
+//                                    },
+//                                    () -> {
+//                                        loadTextByEachCharater(
+//                                                "Ad-blocking engine failed to initialize",
+//                                                fifth_row,
+//                                                null
+//                                        );
+//                                    }
+//                            );
 
                         });
                     });

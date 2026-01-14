@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<level-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- LOW RISK (0–40%) -->
+    <item android:maxLevel="4000">
+        <shape
+            android:shape="ring"
+            android:useLevel="true"
+            android:thicknessRatio="8"
+            android:innerRadiusRatio="3">
+            <solid android:color="#4CAF50"/> <!-- Green -->
+        </shape>
+    </item>
+
+    <!-- MEDIUM RISK (40–70%) -->
+    <item android:maxLevel="7000">
+        <shape
+            android:shape="ring"
+            android:useLevel="true"
+            android:thicknessRatio="8"
+            android:innerRadiusRatio="3">
+            <solid android:color="#FFC107"/> <!-- Yellow -->
+        </shape>
+    </item>
+
+    <!-- HIGH RISK (70–100%) -->
+    <item android:maxLevel="10000">
+        <shape
+            android:shape="ring"
+            android:useLevel="true"
+            android:thicknessRatio="8"
+            android:innerRadiusRatio="3">
+            <solid android:color="#F44336"/> <!-- Red -->
+        </shape>
+    </item>
+
+</level-list>
