@@ -52,7 +52,7 @@
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="70dp"
             android:gravity="center"
             android:text="Argues Eye"
             android:textColor="@color/white"
@@ -104,6 +104,37 @@
                     android:orientation="vertical"
                     android:gravity="center_horizontal">
 
+
+                    <FrameLayout
+                        android:layout_width="140dp"
+                        android:layout_height="140dp"
+                        android:layout_gravity="center">
+
+                        <!-- circular Progress -->
+                        <ProgressBar
+                            android:id="@+id/progress_risk"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:max="100"
+                            android:progress="0"
+                            android:indeterminate="false"
+                            android:progressDrawable="@drawable/circular_progress_risk"/>
+
+                        <!-- center number -->
+                        <TextView
+                            android:id="@+id/tv_risk_score"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="N/A"
+                            android:textSize="36sp"
+                            android:textStyle="bold"
+                            android:textColor="@android:color/white"/>
+                    </FrameLayout>
+
+
+
                     <TextView
                         android:id="@+id/tv_risk_level"
                         android:layout_width="wrap_content"
@@ -143,7 +174,6 @@
                     android:elevation="4dp"
                     android:gravity="center_horizontal">
 
-                <!-- Domain info -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -742,60 +772,6 @@
                     android:textSize="15sp"
                     android:paddingHorizontal="24dp"
                     android:backgroundTint="@color/nice_blue" />
-            </LinearLayout>
-
-            <!-- Action buttons - appear below input when visible -->
-            <LinearLayout
-                android:id="@+id/action_btn_container"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-                <!-- Block + Continue side by side -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_block"
-                        style="@style/Widget.Material3.Button.OutlinedButton"
-                        android:layout_width="0dp"
-                        android:layout_height="56dp"
-                        android:layout_weight="1"
-                        android:text="Block"
-                        android:textColor="@color/btn_block"
-                        app:icon="@drawable/block_ic"
-                        app:iconGravity="textStart"
-                        app:iconTint="@color/btn_block"
-                        app:strokeColor="@color/btn_block" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btn_continue"
-                        android:layout_width="0dp"
-                        android:layout_height="56dp"
-                        android:layout_marginStart="12dp"
-                        android:layout_weight="1"
-                        android:backgroundTint="@color/btn_continue_anyway"
-                        android:text="Continue"
-                        app:icon="@drawable/warning_ic"
-                        app:iconGravity="textStart"
-                        app:iconTint="@color/white" />
-                </LinearLayout>
-
-                <!-- Sandbox button - full width -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_open_sandbox"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:layout_marginTop="16dp"
-                    android:backgroundTint="@color/btn_sandbox"
-                    android:text="Open in Sandbox Environment"
-                    app:icon="@drawable/security_ic"
-                    app:iconGravity="textStart"
-                    app:iconTint="@color/white" />
             </LinearLayout>
 
         </LinearLayout>

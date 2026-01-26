@@ -1,37 +1,48 @@
-<?xml version="1.0" encoding="utf-8"?>
 <level-list xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- LOW RISK (0–40%) -->
+    <!-- LOW RISK -->
     <item android:maxLevel="4000">
-        <shape
-            android:shape="ring"
-            android:useLevel="true"
-            android:thicknessRatio="8"
-            android:innerRadiusRatio="3">
-            <solid android:color="#4CAF50"/> <!-- Green -->
-        </shape>
+        <rotate
+            android:fromDegrees="90"
+            android:toDegrees="90">
+            <shape
+                android:shape="ring"
+                android:useLevel="true"
+                android:thicknessRatio="8"
+                android:innerRadiusRatio="3">
+                <solid android:color="#4CAF50"/>
+            </shape>
+        </rotate>
     </item>
 
-    <!-- MEDIUM RISK (40–70%) -->
+    <!-- MEDIUM RISK -->
     <item android:maxLevel="7000">
-        <shape
-            android:shape="ring"
-            android:useLevel="true"
-            android:thicknessRatio="8"
-            android:innerRadiusRatio="3">
-            <solid android:color="#FFC107"/> <!-- Yellow -->
-        </shape>
+        <rotate
+            android:fromDegrees="90"
+            android:toDegrees="90">
+            <shape
+                android:shape="ring"
+                android:useLevel="true"
+                android:thicknessRatio="8"
+                android:innerRadiusRatio="3">
+                <solid android:color="#FFC107"/>
+            </shape>
+        </rotate>
     </item>
 
-    <!-- HIGH RISK (70–100%) -->
+    <!-- HIGH RISK -->
     <item android:maxLevel="10000">
-        <shape
-            android:shape="ring"
-            android:useLevel="true"
-            android:thicknessRatio="8"
-            android:innerRadiusRatio="3">
-            <solid android:color="#F44336"/> <!-- Red -->
-        </shape>
+        <rotate
+            android:fromDegrees="90"
+            android:toDegrees="90">
+            <shape
+                android:shape="ring"
+                android:useLevel="true"
+                android:thicknessRatio="8"
+                android:innerRadiusRatio="3">
+                <solid android:color="#F44336"/>
+            </shape>
+        </rotate>
     </item>
 
 </level-list>

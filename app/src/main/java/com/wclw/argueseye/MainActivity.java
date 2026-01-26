@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,6 +24,7 @@ import androidx.core.content.ContextCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.common.base.MoreObjects;
 import com.wclw.argueseye.dto.DomainTimeData;
 import com.wclw.argueseye.dto.RdapRespose;
@@ -35,6 +37,7 @@ import com.wclw.argueseye.helpers.RedirectionCheckHelper;
 import com.wclw.argueseye.helpers.UrlInspectorHelper;
 import com.wclw.argueseye.helpers.UrlParser;
 import com.wclw.argueseye.helpers.UrlScanCallBack;
+import com.wclw.argueseye.services.RiskEvaluator;
 
 import java.util.List;
 
@@ -51,8 +54,13 @@ public class MainActivity extends AppCompatActivity {
     private EditText editText_url;
 
     private String interseptedUrl;
-    private Button btn_block;
+    private Button btnBlock;
 
+
+    //store progressbar progress
+    private static int progress = 0;
+    private ProgressBar riskValuePB;
+    private TextView tvRiskScore;
 
     //For FAB button
     private Button btnFabParent;
@@ -60,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout fabMenuLayout;
 
     //containers
-    private LinearLayout actionBtnLayout;
     private LinearLayout urlDetailsLayout;
     private LinearLayout domainInfoLayout;
     private LinearLayout redirectionChainLayout;
@@ -105,16 +112,16 @@ public class MainActivity extends AppCompatActivity {
 
         urlParser = new UrlParser();
 
-        actionBtnLayout = findViewById(R.id.action_btn_container);
         editText_url = findViewById(R.id.editTxt_url);
         urlDetailsLayout = findViewById(R.id.domain_details_container);
         domainInfoLayout = findViewById(R.id.domain_info_container);
         redirectionChainLayout = findViewById(R.id.redirection_chain_container);
         sslCertLayout = findViewById(R.id.ssl_cert_container);
         websitePreviewLayout = findViewById(R.id.website_image_container);
-        btn_block = findViewById(R.id.btn_block);
         dimOverlay = findViewById(R.id.dim_overlay);
         fabMenuLayout = findViewById(R.id.fab_menu_items_container);
+        tvRiskScore = findViewById(R.id.tv_risk_score);
+        riskValuePB = findViewById(R.id.progress_risk);
 
         urlDetailsTV = findViewById(R.id.tv_url_details_status);
         domainInfoTV = findViewById(R.id.tv_domain_info_status);
@@ -135,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
 
         findViewById(R.id.btn_verify).setOnClickListener(v -> verifyUrl());
         findViewById(R.id.btn_fab_block).setOnClickListener(v->{
-            if(!editText_url.getText().isEmpty()) {
+            if(editText_url.getText() != null) {
                 databaseHelper = DatabaseHelper.getInstance(this);
                 databaseHelper.addNewItem(editText_url.getText().toString());
             }
@@ -147,6 +154,11 @@ public class MainActivity extends AppCompatActivity {
 
 //        BloomFilterHelper.initialize(this);
 
+    }
+
+    private void progress(int value){
+        riskValuePB.setProgress(value,true);
+        tvRiskScore.setText(String.valueOf(value));
     }
 
     private void showFabMenu(){
@@ -287,11 +299,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         //call api and load the image
-        getWebsiteImage(editText_url.getText().toString());
+//        getWebsiteImage(editText_url.getText().toString());
+
+        RiskEvaluator riskEvaluator = new RiskEvaluator();
+        progress(riskEvaluator.calculateRiskFactor(editText_url.getText().toString()));
 
         btnVerifiy.setClickable(true);
-
-        actionBtnLayout.setVisibility(View.VISIBLE);
     }
 
     private void showCertificateDetails(String url) {
