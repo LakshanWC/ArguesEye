@@ -3,198 +3,548 @@ package com.wclw.argueseye;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.ContextCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+
+import com.bumptech.glide.Glide;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
+import com.google.common.base.MoreObjects;
+import com.wclw.argueseye.dto.DomainTimeData;
+import com.wclw.argueseye.dto.RdapRespose;
+import com.wclw.argueseye.dto.UrlScanResponse;
+import com.wclw.argueseye.helpers.ArguesEyeAPIHelper;
+import com.wclw.argueseye.helpers.BloomFilterHelper;
+import com.wclw.argueseye.helpers.CertificateChecker;
+import com.wclw.argueseye.helpers.DatabaseHelper;
+import com.wclw.argueseye.helpers.RedirectionCheckHelper;
+import com.wclw.argueseye.helpers.UrlInspectorHelper;
+import com.wclw.argueseye.helpers.UrlParser;
+import com.wclw.argueseye.helpers.UrlScanCallBack;
+import com.wclw.argueseye.services.RiskEvaluator;
+
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
+    private DatabaseHelper databaseHelper;
+    private ApplicationSettings applicationSettings;
+    private ArguesEyeAPIHelper arguesEyeAPIHelper = new ArguesEyeAPIHelper();
     private UrlParser urlParser;
     private EditText editText_url;
-    private LinearLayout sslCertLayout;
 
+    private String interseptedUrl;
+    private Button btnBlock;
+
+
+    //store progressbar progress
+    private static int progress = 0;
+    private ProgressBar riskValuePB;
+    private TextView tvRiskScore;
+
+    //For FAB button
+    private Button btnFabParent;
+    private View dimOverlay;
+    private LinearLayout fabMenuLayout;
+
+    //containers
+    private LinearLayout urlDetailsLayout;
+    private LinearLayout domainInfoLayout;
+    private LinearLayout redirectionChainLayout;
+    private LinearLayout sslCertLayout;
+    private LinearLayout websitePreviewLayout;
+
+    //container titles
+    private TextView urlDetailsTV;
+    private TextView domainInfoTV;
+    private TextView redirectionChainTV;
+    private TextView sslCertificateStatusTV;
+    private TextView websitePreviewStatusTV;
+
+
+    private boolean isUrlDetailsVisible = false;
+    private boolean isDomainInfoVisible = false;
+    private boolean isRedirectionChainVisible = false;
+    private boolean isSSLDetailsVisible = false;
+    private boolean isWebsitePreviewVisible = false;
+
+    // Cache these views once (used a lot)
+    private TextView tv_domain, tv_subdomain, tv_tld, tv_path, tv_query, tv_scheme;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        EdgeToEdge.enable(this);
+
+        Intent interseptIntent = getIntent();
+
+        if(interseptIntent != null && interseptIntent.hasExtra("url")){
+            interseptedUrl = interseptIntent.getStringExtra("url");
+
+            if(interseptedUrl !=null || interseptedUrl.isEmpty()){
+
+                editText_url.setText(interseptedUrl);
+                verifyUrl();
+            }
+        }
+
 
         urlParser = new UrlParser();
 
-
-        Button btn = findViewById(R.id.btn_block);
         editText_url = findViewById(R.id.editTxt_url);
+        urlDetailsLayout = findViewById(R.id.domain_details_container);
+        domainInfoLayout = findViewById(R.id.domain_info_container);
+        redirectionChainLayout = findViewById(R.id.redirection_chain_container);
         sslCertLayout = findViewById(R.id.ssl_cert_container);
-        btn.setActivated(false);
+        websitePreviewLayout = findViewById(R.id.website_image_container);
+        dimOverlay = findViewById(R.id.dim_overlay);
+        fabMenuLayout = findViewById(R.id.fab_menu_items_container);
+        tvRiskScore = findViewById(R.id.tv_risk_score);
+        riskValuePB = findViewById(R.id.progress_risk);
 
+        urlDetailsTV = findViewById(R.id.tv_url_details_status);
+        domainInfoTV = findViewById(R.id.tv_domain_info_status);
+        sslCertificateStatusTV = findViewById(R.id.tv_ssl_certificate_status);
+        redirectionChainTV = findViewById(R.id.tv_redirection_info_status);
+        websitePreviewStatusTV = findViewById(R.id.tv_website_image_status);
+
+
+        tv_domain = findViewById(R.id.tv_domain);
+        tv_subdomain = findViewById(R.id.tv_subdomain);
+        tv_tld = findViewById(R.id.tv_tld);
+        tv_path = findViewById(R.id.tv_path);
+        tv_query = findViewById(R.id.tv_query);
+        tv_scheme = findViewById(R.id.tv_scheme);
+
+
+        setupExpandableSections();
+
+        findViewById(R.id.btn_verify).setOnClickListener(v -> verifyUrl());
+        findViewById(R.id.btn_fab_block).setOnClickListener(v->{
+            if(editText_url.getText() != null) {
+                databaseHelper = DatabaseHelper.getInstance(this);
+                databaseHelper.addNewItem(editText_url.getText().toString());
+            }
+        });
+        findViewById(R.id.btn_fab_continue).setOnClickListener(v->continueToBrowser());
+        findViewById(R.id.btn_fab_open_sandBox).setOnClickListener(v->openBrowserSandBox());
+        findViewById(R.id.btn_fab_parent).setOnClickListener(v->showFabMenu());
+        dimOverlay.setOnClickListener(v->hideFabMenu());
+
+//        BloomFilterHelper.initialize(this);
+
+    }
+
+    private void progress(int value){
+        riskValuePB.setProgress(value,true);
+        tvRiskScore.setText(String.valueOf(value));
+    }
+
+    private void showFabMenu(){
+        dimOverlay.setVisibility(View.VISIBLE);
+        fabMenuLayout.setVisibility(View.VISIBLE);
+    }
+
+    private void hideFabMenu(){
+        dimOverlay.setVisibility(View.GONE);
+        fabMenuLayout.setVisibility(View.GONE);
+    }
+
+    private void setupExpandableSections() {
+        urlDetailsTV.setOnClickListener(v -> {
+            isUrlDetailsVisible = !isUrlDetailsVisible;
+            urlDetailsLayout.setVisibility(isUrlDetailsVisible ? View.VISIBLE : View.GONE);
+            updateArrow(urlDetailsTV);
+        });
+
+        domainInfoTV.setOnClickListener(v->{
+            isDomainInfoVisible = !isDomainInfoVisible;
+            domainInfoLayout.setVisibility(isDomainInfoVisible? View.VISIBLE : View.GONE);
+            updateArrow(domainInfoTV);
+        });
+
+        redirectionChainTV.setOnClickListener(v->{
+            isRedirectionChainVisible = !isRedirectionChainVisible;
+            redirectionChainLayout.setVisibility(isRedirectionChainVisible? View.VISIBLE : View.GONE);
+            updateArrow(redirectionChainTV);
+        });
+
+        sslCertificateStatusTV.setOnClickListener(v -> {
+            isSSLDetailsVisible = !isSSLDetailsVisible;
+            sslCertLayout.setVisibility(isSSLDetailsVisible ? View.VISIBLE : View.GONE);
+            updateArrow(sslCertificateStatusTV);
+        });
+
+        websitePreviewStatusTV.setOnClickListener(v ->{
+            isWebsitePreviewVisible = !isWebsitePreviewVisible;
+            websitePreviewLayout.setVisibility(isWebsitePreviewVisible? View.VISIBLE : View.GONE);
+            updateArrow(websitePreviewStatusTV);
+        });
+
+        // Start collapsed
+        urlDetailsLayout.setVisibility(View.GONE);
+        domainInfoLayout.setVisibility(View.GONE);
+        redirectionChainLayout.setVisibility(View.GONE);
+        sslCertLayout.setVisibility(View.GONE);
+        websitePreviewLayout.setVisibility(View.GONE);
+
+    }
+
+    private void updateArrow(TextView textView) {
+        String text = textView.getText().toString();
+        if (text.contains("▼")) {
+            textView.setText(text.replace("▼", "▲"));
+        } else {
+            textView.setText(text.replace("▲", "▼"));
+        }
+    }
+
+    private void verifyUrl() {
+        Button btnVerifiy = findViewById(R.id.btn_verify);
+        btnVerifiy.setClickable(false);
+
+        redirectionChainLayout.removeAllViews();
 
         BloomFilterHelper.initialize(this);
+        String url = editText_url.getText().toString().trim();
 
-    }
+        if (TextUtils.isEmpty(url)) {
+            Toast.makeText(this, "Please enter a URL", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
+        editText_url.setText(urlParser.fixMissingProtocol(url));
+        url = editText_url.getText().toString().trim(); //apply the fixed url
 
-    public void goToMenu(View view){
-        Intent menuIntent = new Intent(MainActivity.this,MenuActivity.class);
-        startActivity(menuIntent);
-    }
+        FilterType type = BloomFilterHelper.checkFilter(url);
+        UrlParser.Parts parts = urlParser.parseUrl(url);
 
-    public void verifyButtonClick(View view){
-        Button button = findViewById(R.id.btn_verify);
         TextView tv_risk = findViewById(R.id.tv_risk_level);
-
-        TextView tv_domain = findViewById(R.id.tv_domain);
-        TextView tv_scheme = findViewById(R.id.tv_scheme);
-        TextView tv_subdomain = findViewById(R.id.tv_subdomain);
-        TextView tv_tdl = findViewById(R.id.tv_tld);
-        TextView tv_path = findViewById(R.id.tv_path);
-        TextView tv_query = findViewById(R.id.tv_query);
-
         TextView tv_cert_Stat = findViewById(R.id.tv_cert_avilability);
 
-        button.setOnClickListener(new View.OnClickListener() {
+        // Update risk level
+        switch (type) {
+            case TRUSTED :
+                tv_risk.setText("Found in TRUSTED List");
+                break;
+            case UNTRUSTED :
+                tv_risk.setText("Found in Untrusted List");
+                break;
+            case NONE :
+                tv_risk.setText("Not Found");
+                break;
+        }
+
+        checkBlockedList(url);
+
+        if (parts != null) {
+            // Fill URL parts
+            tv_domain.setText(parts.domain + "." + parts.tld);
+            tv_subdomain.setText(TextUtils.isEmpty(parts.subdomain) ? "None" : parts.subdomain);
+            tv_tld.setText(parts.tld);
+            tv_path.setText(TextUtils.isEmpty(parts.path) ? "/" : parts.path);
+            tv_query.setText(TextUtils.isEmpty(parts.query) ? "None" : parts.query);
+            tv_scheme.setText(parts.scheme);
+
+            // Reset expandable sections every time
+            urlDetailsTV.setText("URL Details ▼");
+            isUrlDetailsVisible = false;
+            urlDetailsLayout.setVisibility(View.GONE);
+
+//            showRedirectionOnUI(url);
+            redirectionChainTV.setText("Redirection Chain ▼");
+            isRedirectionChainVisible = false;
+            redirectionChainLayout.setVisibility(View.GONE);
+
+            loadRdapData(url);
+            domainInfoTV.setText("Domain Information ▼");
+            domainInfoLayout.setVisibility(View.GONE);
+
+            if (parts.scheme.equalsIgnoreCase("https")) {
+                tv_cert_Stat.setVisibility(View.GONE);
+                sslCertificateStatusTV.setText("SSL Certificate ▼");
+                isSSLDetailsVisible = false;
+                showCertificateDetails(url);  // This will fill SSL data
+            } else {
+                tv_cert_Stat.setText("No SSL certificate (not HTTPS)");
+                tv_cert_Stat.setVisibility(View.VISIBLE);
+                sslCertificateStatusTV.setText("SSL Certificate (Not Available)");
+                sslCertLayout.setVisibility(View.GONE);
+            }
+        } else {
+            tv_risk.setText("Invalid URL Format");
+            tv_cert_Stat.setText("Invalid URL");
+            tv_cert_Stat.setVisibility(View.VISIBLE);
+        }
+
+        //call api and load the image
+//        getWebsiteImage(editText_url.getText().toString());
+
+        RiskEvaluator riskEvaluator = new RiskEvaluator();
+        progress(riskEvaluator.calculateRiskFactor(editText_url.getText().toString()));
+
+        btnVerifiy.setClickable(true);
+    }
+
+    private void showCertificateDetails(String url) {
+        new CertificateChecker().checkCertificate(url, this, results -> runOnUiThread(() -> {
+            if (results == null || results.error != null) {
+                sslCertLayout.setVisibility(View.GONE);
+                sslCertificateStatusTV.setText("SSL Certificate (Error)");
+                Toast.makeText(this, "SSL Error: " + (results != null ? results.error : "Failed"), Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            sslCertificateStatusTV.setText("SSL Certificate  ▼");
+            isSSLDetailsVisible = false;
+            sslCertLayout.setVisibility(View.GONE); // collapsed by default
+
+            // Fill certificate info
+            ((TextView) findViewById(R.id.tv_cert_subject)).setText(results.subject != null ? results.subject : "N/A");
+            ((TextView) findViewById(R.id.tv_cert_issuer)).setText(results.issuer != null ? results.issuer : "N/A");
+            ((TextView) findViewById(R.id.tv_cert_valid_from)).setText(results.validFrom != null ? results.validFrom : "N/A");
+            ((TextView) findViewById(R.id.tv_cert_valid_until)).setText(results.validUntil != null ? results.validUntil : "N/A");
+            ((TextView) findViewById(R.id.tv_cert_fingerprint)).setText(results.fingerprint != null ? results.fingerprint : "N/A");
+
+            String sans = results.sans.isEmpty() ? "None" : "• " + TextUtils.join("\n• ", results.sans);
+            ((TextView) findViewById(R.id.tv_cert_sans)).setText(sans);
+
+            // Warning / Safe banner
+            TextView tvSummary = findViewById(R.id.tv_cert_security_summary);
+            View warningBanner = findViewById(R.id.cert_warning_banner);
+            View safeBanner = findViewById(R.id.cert_safe_banner);
+
+            StringBuilder warning = new StringBuilder();
+            boolean hasIssue = false;
+
+            if (results.hostnameMismatch) { warning.append("HOSTNAME MISMATCH\n"); hasIssue = true; }
+            if (results.expired) { warning.append("CERTIFICATE EXPIRED\n"); hasIssue = true; }
+            if (results.selfSigned) { warning.append("SELF-SIGNED CERTIFICATE\n"); hasIssue = true; }
+
+            if (hasIssue) {
+                tvSummary.setText(warning.toString().trim());
+                warningBanner.setVisibility(View.VISIBLE);
+                safeBanner.setVisibility(View.GONE);
+            } else {
+                warningBanner.setVisibility(View.GONE);
+                safeBanner.setVisibility(View.VISIBLE);
+            }
+
+            // Copy fingerprint on long press
+            findViewById(R.id.tv_cert_fingerprint).setOnLongClickListener(v -> {
+                ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                cm.setPrimaryClip(ClipData.newPlainText("Fingerprint", results.fingerprint));
+                Toast.makeText(this, "Fingerprint copied!", Toast.LENGTH_SHORT).show();
+                return true;
+            });
+        }));
+    }
+
+    //get domainage details from retro
+    private void loadRdapData(String url) {
+        UrlParser.Parts urlParts = urlParser.parseUrl(url);
+        String domain = urlParts.domain + "." + urlParts.tld;
+
+        UrlInspectorHelper.getInstance().fetchWhois(this,domain, new Callback<RdapRespose>() {
             @Override
-            public void onClick(View view) {
+            public void onResponse(Call<RdapRespose> call, Response<RdapRespose> response) {
+                TextView tv_registor = findViewById(R.id.tv_registration_date);
+                TextView tv_expior = findViewById(R.id.tv_expire_date);
+                TextView tv_last_changed = findViewById(R.id.tv_last_changed);
+                TextView tv_domain_age = findViewById(R.id.tv_domain_age);
+                TextView tv_is_expired = findViewById(R.id.tv_is_expired);
+                TextView tv_safety_note = findViewById(R.id.tv_safety_note);
+                TextView tv_summery = findViewById(R.id.tv_risk_summery);
 
 
-                FilterType type = BloomFilterHelper.checkFilter(editText_url.getText().toString());
-                UrlParser.Parts parts = urlParser.parseUrl(editText_url.getText().toString());
+                if (response.isSuccessful() && response.body() != null) {
+                    RdapRespose rdap = response.body();
 
-                switch(type){
-                    case TRUSTED:
-                        tv_risk.setText("Found in TRUSTED List");
-                        break;
-                    case UNTRUSTED:
-                        tv_risk.setText("Found in Untrusted List");
-                        break;
-                    case NONE:
-                        tv_risk.setText("Not Found");
-                        break;
-                }
+                    //fetch dates
+                    String registrationDate = UrlInspectorHelper.getInstance()
+                            .findEventDate(rdap.events, "registration");
+                    String expirationDate = UrlInspectorHelper.getInstance()
+                            .findEventDate(rdap.events, "expiration");
+                    String lastUpdateDate = UrlInspectorHelper.getInstance()
+                            .findEventDate(rdap.events,"last changed");
 
-                if(parts != null) {
-                    tv_domain.setText(parts.domain+"." + parts.tld);
-                    tv_subdomain.setText(parts.subdomain);
-                    tv_tdl.setText(parts.tld);
-                    tv_path.setText(parts.path);
-                    tv_query.setText(parts.query);
-                    tv_scheme.setText(parts.scheme);
+                    //clean dates
+                    registrationDate = UrlInspectorHelper.getInstance().cleanTimeStamp(registrationDate);
+                    expirationDate = UrlInspectorHelper.getInstance().cleanTimeStamp(expirationDate);
+                    lastUpdateDate = UrlInspectorHelper.getInstance().cleanTimeStamp(lastUpdateDate);
 
-                    if(parts.scheme.equalsIgnoreCase("https")){
-                        showCertificateDetails(editText_url.getText().toString());
-                        tv_cert_Stat.setVisibility(View.GONE);
-                    }else{
-                        tv_cert_Stat.setText("No SSL certificate available (not HTTPS)");
-                        tv_cert_Stat.setVisibility(View.VISIBLE);
+                    //get age and safety note
+                    DomainTimeData domainTimeData = UrlInspectorHelper.getInstance()
+                            .domainAgeCheck(registrationDate,expirationDate);
+
+                    //set data to textViews
+                    tv_registor.setText(!registrationDate.equals("Unknown") ? registrationDate : "N/A");
+                    tv_expior.setText(!expirationDate.equals("Unknown") ? expirationDate : "N/A");
+                    tv_last_changed.setText(!lastUpdateDate.equals("Unknown")?lastUpdateDate:"N/A");
+                    tv_domain_age.setText(domainTimeData.domainAge);
+                    if(domainTimeData.isExpired){
+                        tv_is_expired.setTextColor(getResources().getColor(R.color.danger_red));
                     }
+                    tv_is_expired.setText(domainTimeData.isExpired? "True":"False");
+                    tv_safety_note.setText(domainTimeData.message);
+                    tv_summery.setText(domainTimeData.message);
+
+                } else {
+                    tv_registor.setText("N/A");
+                    tv_expior.setText("N/A");
+                    tv_last_changed.setText("N/A");
+
+                    Toast.makeText(MainActivity.this, "RDAP response empty or failed", Toast.LENGTH_SHORT).show();
                 }
-                else{
-                    tv_cert_Stat.setText("Invalid URL");
-                    tv_cert_Stat.setVisibility(View.VISIBLE);
-                }
+            }
+
+            @Override
+            public void onFailure(Call<RdapRespose> call, Throwable t) {
+                Toast.makeText(MainActivity.this, "Failed to fetch RDAP: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                t.printStackTrace();
             }
         });
     }
 
-    private void showCertificateDetails(String url) {
+    private void getWebsiteImage(String webUrl){
+        ImageView imageView = findViewById(R.id.iv_website_image);
 
-        CertificateChecker sslVerificationHelper = new CertificateChecker();
+        arguesEyeAPIHelper.sendRequest(webUrl, new UrlScanCallBack() {
+            @Override
+            public void onSuccess(UrlScanResponse urlScanResponse) {
+                runOnUiThread(()->{
+                   String imageUrl = "https://urlscan.io/screenshots/"
+                           +urlScanResponse.scan.uuid
+                           +".png";
 
-        sslVerificationHelper.checkCertificate(url, this, results -> {
-
-            runOnUiThread(() -> {
-                if (results == null || results.error != null) {
-                    sslCertLayout.setVisibility(View.GONE);
-                    Toast.makeText(this, "Certificate error: " + (results != null ? results.error : "Unknown"), Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-                sslCertLayout.setVisibility(View.VISIBLE);
-
-                // Find views
-                TextView tvSubject = findViewById(R.id.tv_cert_subject);
-                TextView tvIssuer = findViewById(R.id.tv_cert_issuer);
-                TextView tvFrom = findViewById(R.id.tv_cert_valid_from);
-                TextView tvUntil = findViewById(R.id.tv_cert_valid_until);
-                TextView tvFingerprint = findViewById(R.id.tv_cert_fingerprint);
-                TextView tvSans = findViewById(R.id.tv_cert_sans);
-                TextView tvSummary = findViewById(R.id.tv_cert_security_summary);
-                View warningBanner = findViewById(R.id.cert_warning_banner);
-                View safeBanner = findViewById(R.id.cert_safe_banner);
-
-                // Fill basic fields
-                tvSubject.setText(results.subject != null ? results.subject : "N/A");
-                tvIssuer.setText(results.issuer != null ? results.issuer : "N/A");
-                tvFrom.setText(results.validFrom != null ? results.validFrom : "N/A");
-                tvUntil.setText(results.validUntil != null ? results.validUntil : "N/A");
-                tvFingerprint.setText(results.fingerprint != null ? results.fingerprint : "N/A");
-
-                // SANs
-                String sansText = results.sans.isEmpty() ? "None" : "• " + TextUtils.join("\n• ", results.sans);
-                tvSans.setText(sansText);
-
-                // Security summary
-                StringBuilder warning = new StringBuilder();
-                boolean hasWarning = false;
-
-                if (results.hostnameMismatch) {
-                    warning.append("HOSTNAME DOES NOT MATCH\n");
-                    hasWarning = true;
-                }
-                if (results.expired) {
-                    warning.append("CERTIFICATE EXPIRED\n");
-                    hasWarning = true;
-                }
-                if (results.selfSigned) {
-                    warning.append("SELF-SIGNED CERTIFICATE\n");
-                    hasWarning = true;
-                }
-
-                if (hasWarning) {
-                    tvSummary.setText(warning.toString().trim());
-                    warningBanner.setVisibility(View.VISIBLE);
-                    safeBanner.setVisibility(View.GONE);
-                } else {
-                    warningBanner.setVisibility(View.GONE);
-                    safeBanner.setVisibility(View.VISIBLE);
-                }
-
-                // Make fingerprint easy to copy
-                tvFingerprint.setOnLongClickListener(v -> {
-                    ClipboardManager cm = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                    ClipData clip = ClipData.newPlainText("SHA-256 Fingerprint", results.fingerprint);
-                    cm.setPrimaryClip(clip);
-                    Toast.makeText(this, "Fingerprint copied!", Toast.LENGTH_SHORT).show();
-                    return true;
+                   Glide.with(MainActivity.this)
+                            .load("https://urlscan.io/screenshots/"+urlScanResponse.scan.uuid+".png")
+                            .placeholder(R.drawable.nav_button_box)
+                            .error(R.drawable.ic_launcher_background)
+                            .into(imageView);
                 });
-            });
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                runOnUiThread(()->{
+                    Glide.with(MainActivity.this)
+                            .load(R.drawable.badge_strict_mode)
+                            .placeholder(R.drawable.nav_button_box)
+                            .error(R.drawable.ic_launcher_background)
+                            .into(imageView);
+                });
+            }
         });
+
     }
 
 
-    public void openBrowserSandBox(View view){
-        EditText urlTxt = findViewById(R.id.editTxt_url);
+    //TODO this method logic need to be checked
+/*
+    private void showRedirectionOnUI(String url){
+        List<String> redirectionList;
 
-        //TODO:implement sandbox method
+        if(RedirectionCheckHelper.getRedirectionChain(url) != null){
+
+            redirectionList = RedirectionCheckHelper.getRedirectionChain(url);
+
+            for (String item: redirectionList) {
+
+                TextView textView = new TextView(this);
+                textView.setText(item);
+                textView.setPadding(0,0,0,12);
+
+                redirectionChainLayout.addView(textView);
+                 Log.d("MYTEST",item);
+            }
+        }
+        else{
+            TextView textView = new TextView(this);
+            textView.setText("No Redirections found");
+            redirectionChainLayout.addView(textView);
+        }
+    }
+*/
+
+
+    private void continueToBrowser() {
+        String url = editText_url.getText().toString().trim();
+
+        if (TextUtils.isEmpty(url)) {
+            Toast.makeText(this, "Enter a URL first", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Add https:// if no scheme
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            url = "https://" + url;
+        }
+
+        if (!android.webkit.URLUtil.isValidUrl(url)) {
+            Toast.makeText(this, "Invalid URL", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Uri uri = Uri.parse(url);
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, uri);
+
+        Intent chooser = Intent.createChooser(browserIntent, "Open with");
+
+        // check if there is atlest 1 browser
+        if (chooser.resolveActivity(getPackageManager()) != null) {
+            startActivity(chooser);
+        } else {
+            Toast.makeText(this, "No web browser installed!", Toast.LENGTH_LONG).show();
+        }
     }
 
-    public void blockUrl(View view){
-        //TODO:implement url block method
+    private void checkBlockedList(String url){
+
+        TextView textView = findViewById(R.id.tv_risk_level);
+        databaseHelper = DatabaseHelper.getInstance(this);
+
+        if(databaseHelper.onBlockList(url)){ textView.setText("Found in Blocked Urls");}
     }
+
+
+    public void goToMenu(View view) {
+        startActivity(new Intent(this, MenuActivity.class));
+    }
+
+
+    public void openBrowserSandBox() {
+        String url = editText_url.getText().toString().trim();
+
+        if (TextUtils.isEmpty(url)) {
+            Toast.makeText(this, "Enter a URL first", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Intent webViewIntent = new Intent(this,SandBoxBrowser.class);
+        webViewIntent.putExtra("url",url);
+        startActivity(webViewIntent);
+    }
+    public void blockUrl(View view) { /* TODO */ }
 }

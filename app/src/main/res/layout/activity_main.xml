@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity"
-    android:background="@color/bg_primary">
+    android:background="@color/bg_primary"
+    android:fitsSystemWindows="true">
 
     <!-- Header with logo and title -->
     <LinearLayout
+        app:layout_constraintTop_toTopOf="parent"
         android:id="@+id/header"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="wrap_content"
         android:background="@color/bg_card"
         android:orientation="vertical">
 
@@ -31,7 +34,7 @@
                 android:layout_height="48dp"
                 android:layout_margin="10dp"
                 android:src="@drawable/shield_24px"
-                android:tint="@color/nice_blue"
+                app:tint= "@color/nice_blue"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:scaleType="fitCenter" />
 
@@ -42,14 +45,14 @@
                 android:layout_margin="10dp"
                 android:src="@drawable/more_horiz_24px"
                 android:onClick="goToMenu"
-                android:tint="@color/white"
+                app:tint ="@color/white"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:scaleType="fitCenter" />
         </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="70dp"
             android:gravity="center"
             android:text="Argues Eye"
             android:textColor="@color/white"
@@ -78,32 +81,6 @@
             android:orientation="horizontal"
             android:gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/txtView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="18sp"
-                android:text="URL: "
-                android:layout_marginEnd="4dp"/>
-
-            <EditText
-                android:id="@+id/editTxt_url"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="Paste your link here"
-                android:inputType="textUri"
-                android:padding="8dp"/>
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_verify"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="verifyButtonClick"
-                android:backgroundTint="@color/nice_blue"
-                android:textColor="@color/white"
-                android:text="Verify"
-                android:layout_marginStart="8dp"/>
         </LinearLayout>
 
         <!-- Scrollable content -->
@@ -123,8 +100,40 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:padding="12dp">
+                    android:padding="12dp"
+                    android:orientation="vertical"
+                    android:gravity="center_horizontal">
+
+
+                    <FrameLayout
+                        android:layout_width="140dp"
+                        android:layout_height="140dp"
+                        android:layout_gravity="center">
+
+                        <!-- circular Progress -->
+                        <ProgressBar
+                            android:id="@+id/progress_risk"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:max="100"
+                            android:progress="0"
+                            android:indeterminate="false"
+                            android:progressDrawable="@drawable/circular_progress_risk"/>
+
+                        <!-- center number -->
+                        <TextView
+                            android:id="@+id/tv_risk_score"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:text="N/A"
+                            android:textSize="36sp"
+                            android:textStyle="bold"
+                            android:textColor="@android:color/white"/>
+                    </FrameLayout>
+
+
 
                     <TextView
                         android:id="@+id/tv_risk_level"
@@ -134,9 +143,37 @@
                         android:textSize="28sp"
                         android:textStyle="bold"
                         android:textColor="@color/text_primary" />
+
+                    <TextView
+                        android:id="@+id/tv_risk_summery"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="gone"/>
+
                 </LinearLayout>
 
-                <!-- Domain info -->
+
+                <TextView
+                    android:id="@+id/tv_url_details_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="URL Details"
+                    android:textStyle="bold"
+                    android:layout_marginTop="20dp"
+                    android:textColor="@color/text_secondary"/>
+
+<!--keep all domaind details-->
+                <LinearLayout
+                    android:id="@+id/domain_details_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="@drawable/nav_button_box"
+                    android:padding="16dp"
+                    android:layout_margin="12dp"
+                    android:elevation="4dp"
+                    android:gravity="center_horizontal">
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -222,8 +259,136 @@
                     android:textColor="@color/text_primary"
                     android:paddingBottom="12dp"/>
 
+                </LinearLayout>
+
+<!--    Domain information    -->
+
+                <TextView
+                    android:id="@+id/tv_domain_info_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Domain Information"
+                    android:textColor="@color/text_secondary"
+                    android:textStyle="bold"
+                    android:layout_marginTop="20dp"/>
+
+                <LinearLayout
+                    android:id="@+id/domain_info_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:background="@drawable/nav_button_box"
+                    android:padding="16dp"
+                    android:layout_margin="12dp"
+                    android:elevation="4dp"
+                    android:gravity="center_horizontal">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Date of Registration"
+                        android:textStyle="bold"
+                        android:layout_marginTop="15dp"
+                        android:textColor="@color/text_secondary"/>
+                    <TextView
+                        android:id="@+id/tv_registration_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="12dp"/>
+
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Expiry Date"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_secondary"/>
+                    <TextView
+                        android:id="@+id/tv_expire_date"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="12dp"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Last Updated On"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_secondary"/>
+                    <TextView
+                        android:id="@+id/tv_last_changed"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="12dp"/>
+
+                    <!--    domain age section    -->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Domain Age"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_secondary"/>
+                    <TextView
+                        android:id="@+id/tv_domain_age"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="12dp"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="isExpired"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_secondary"/>
+                    <TextView
+                        android:id="@+id/tv_is_expired"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="12dp"/>
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Safety Note"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_secondary"/>
+                    <TextView
+                        android:id="@+id/tv_safety_note"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingBottom="12dp"/>
+
+                </LinearLayout>
+
+<!--    redirection chain Information    -->
+                <TextView
+                    android:visibility="gone"
+                    android:id="@+id/tv_redirection_info_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Redirection Chain"
+                    android:layout_marginTop="15dp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_secondary"/>
+
+                <LinearLayout
+                    android:id="@+id/redirection_chain_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:background="@drawable/nav_button_box"
+                    android:padding="16dp"
+                    android:layout_margin="12dp"
+                    android:elevation="4dp">
+
+                </LinearLayout>
+
+
+
                 <!-- SSL Certificate Info -->
                 <TextView
+                    android:id="@+id/tv_ssl_certificate_status"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="SSL Certificate Details"
@@ -388,20 +553,174 @@
                         android:paddingBottom="8dp"/>
 
                 </LinearLayout>
+<!-- website Image-->
+                <TextView
+                    android:id="@+id/tv_website_image_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Website Preview"
+                    android:textColor="@color/text_secondary"
+                    android:textStyle="bold"
+                    android:layout_marginTop="16dp"/>
+                <LinearLayout
+                    android:orientation="vertical"
+                    android:id="@+id/website_image_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:id="@+id/iv_website_image"
+                        android:layout_marginTop="10dp"
+                        android:src="@color/white"
+                        android:layout_width="match_parent"
+                        android:layout_height="250dp"/>
+
+                </LinearLayout>
 
             </LinearLayout>
         </ScrollView>
     </LinearLayout>
 
-    <!-- Footer buttons -->
-    <LinearLayout
-        android:id="@+id/footer"
+
+    <!-- FAB MENU CONTAINER -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/fab_menu_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@id/bottom_action_bar_card"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:elevation="20dp">
+
+        <!-- Dim overlay -->
+        <View
+            android:id="@+id/dim_overlay"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:background="#80000000"
+            android:visibility="gone"
+            android:clickable="true"
+            android:focusable="true"
+
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Parent FAB btn-->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/btn_fab_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="24dp"
+            android:layout_marginBottom="150dp"
+            android:src="@drawable/visibility_ic"
+            app:backgroundTint="@color/serenity_blue"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+<!--has all the buttons inside the FAB--><LinearLayout
+        android:id="@+id/fab_menu_items_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintEnd_toEndOf="@id/btn_fab_parent"
+        app:layout_constraintBottom_toTopOf="@id/btn_fab_parent">
+
+        <!-- Open Sandbox -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp"
+            android:layout_marginRight="10dp">
+
+            <TextView
+                android:id="@+id/tv_fab_open_sandbox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Open Sandbox"
+                android:textColor="@android:color/white"
+                android:textSize="14sp"
+                android:paddingEnd="8dp"/>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btn_fab_open_sandBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/security_ic"/>
+        </LinearLayout>
+
+        <!-- Continue -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp"
+            android:layout_marginLeft="35dp">
+
+            <TextView
+                android:id="@+id/tv_fab_continue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Continue"
+                android:textColor="@android:color/white"
+                android:textSize="14sp"
+                android:paddingEnd="8dp"/>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btn_fab_continue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/warning_ic"/>
+        </LinearLayout>
+
+        <!-- Block -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp"
+            android:layout_marginLeft="55dp">
+
+            <TextView
+                android:id="@+id/tv_fab_block"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Block"
+                android:textColor="@android:color/white"
+                android:textSize="14sp"
+                android:paddingEnd="8dp"/>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/btn_fab_block"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/cancel_24px"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+
+    <!-- Footer / Bottom Action Bar -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/bottom_action_bar_card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/bg_card"
-        android:padding="10dp"
-        android:layout_marginBottom="10dp"
-        android:orientation="vertical"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="24dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="10dp"
+        app:cardBackgroundColor="@color/bg_card"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -409,35 +728,54 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:background="@drawable/rounded_input_bg">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_block"
-                android:layout_width="0dp"
+            <!-- Input + Verify - always visible -->
+            <LinearLayout
+                android:id="@+id/input_section"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:backgroundTint="@color/btn_block"
-                android:textColor="@color/white"
-                android:text="Block Url"/>
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:padding="6dp">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_continue"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="10dp"
-                android:textColor="@color/white"
-                android:backgroundTint="@color/btn_continue_anyway"
-                android:text="Continue Any Way"/>
+                <ImageView
+                    android:id="@+id/btn_clear_url"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/cancel_24px"
+                    app:tint="@color/text_secondary"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:visibility="gone" />
+
+                <EditText
+                    android:id="@+id/editTxt_url"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="56dp"
+                    android:hint="Paste or type URL here..."
+                    android:background="@null"
+                    android:paddingHorizontal="12dp"
+                    android:textSize="16sp"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:inputType="textUri" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_verify"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:minWidth="100dp"
+                    android:text="Verify"
+                    android:textSize="15sp"
+                    android:paddingHorizontal="24dp"
+                    android:backgroundTint="@color/nice_blue" />
+            </LinearLayout>
+
         </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_open_sandbox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:textColor="@color/white"
-            android:backgroundTint="@color/btn_sandbox"
-            android:text="Open in Sandbox Environment"/>
-    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

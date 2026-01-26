@@ -1,4 +1,4 @@
-package com.wclw.argueseye;
+package com.wclw.argueseye.helpers;
 
 import android.content.Context;
 
@@ -6,7 +6,6 @@ import androidx.annotation.NonNull;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.Connection;
 import okhttp3.Handshake;
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;

@@ -3,7 +3,10 @@ package com.wclw.argueseye;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,7 +14,15 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.material.card.MaterialCardView;
+import com.wclw.argueseye.services.BlockList;
+
 public class MenuActivity extends AppCompatActivity {
+
+    private MaterialCardView btn_settings;
+    private MaterialCardView btn_exit;
+    private MaterialCardView btn_blockList;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +34,28 @@ public class MenuActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        btn_settings = findViewById(R.id.btn_settings);
+        btn_exit = findViewById(R.id.btn_exit);
+        btn_blockList = findViewById(R.id.btn_blocklist);
+
+
+
+        btn_exit.setOnClickListener(V->{
+            finishAffinity();
+        });
+
+        btn_blockList.setOnClickListener(V->{
+            Intent intent = new Intent(this, BlockList.class);
+            startActivity(intent);
+        });
+
+        btn_settings.setOnClickListener(V->{
+            Intent intent = new Intent(this,AppSettings.class);
+            startActivity(intent);
+        });
+
+
     }
 
 
@@ -30,4 +63,5 @@ public class MenuActivity extends AppCompatActivity {
         Intent homeIntent = new Intent(MenuActivity.this,MainActivity.class);
         startActivity(homeIntent);
     }
+
 }

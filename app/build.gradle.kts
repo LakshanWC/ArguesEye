@@ -43,4 +43,12 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation("com.google.guava:guava:33.3.1-android") //for bloom filter
     implementation("com.squareup.okhttp3:okhttp:4.12.0") //for prasing urls
+    implementation("androidx.webkit:webkit:1.12.0")
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0") //for domain age verification
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation ("com.github.bumptech.glide:glide:4.16.0") //allow setting image for image view easily
+    annotationProcessor ("com.github.bumptech.glide:compiler:4.16.0")
+    implementation("org.apache.commons:commons-text:1.11.0") // string utils
 }

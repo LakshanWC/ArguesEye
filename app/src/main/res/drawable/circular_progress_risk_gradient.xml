@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- HIGH RISK (pressed / active) -->
+    <item android:state_pressed="true">
+        <shape android:shape="ring"
+            android:innerRadiusRatio="3"
+            android:thicknessRatio="8">
+            <solid android:color="#F44336"/> <!-- Red -->
+        </shape>
+    </item>
+
+    <!-- MEDIUM RISK (focused / selected) -->
+    <item android:state_focused="true">
+        <shape android:shape="ring"
+            android:innerRadiusRatio="3"
+            android:thicknessRatio="8">
+            <solid android:color="#FFC107"/> <!-- Yellow -->
+        </shape>
+    </item>
+
+    <!-- LOW RISK (default) -->
+    <item>
+        <shape android:shape="ring"
+            android:innerRadiusRatio="3"
+            android:thicknessRatio="8">
+            <solid android:color="#4CAF50"/> <!-- Green -->
+        </shape>
+    </item>
+
+</selector>

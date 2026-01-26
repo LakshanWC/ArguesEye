@@ -1,10 +1,11 @@
-package com.wclw.argueseye;
+package com.wclw.argueseye.helpers;
 
 import android.content.Context;
 import android.widget.Toast;
 
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
+import com.wclw.argueseye.FilterType;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,9 +20,8 @@ public class BloomFilterHelper {
     private static BloomFilter<String> trustedFilter;
     private static BloomFilter<String> untrustedFilter;
 
-    // ------------------------------------------------------------
-    // LOAD FILTERS (only once, cached in memory)
-    // ------------------------------------------------------------
+
+//    LOAD FILTERS (only once, cached in memory)
     public static void initialize(Context context) {
         if (trustedFilter == null)
             trustedFilter = loadBloom(context, true);
@@ -65,9 +65,6 @@ public class BloomFilterHelper {
         }
     }
 
-    // ------------------------------------------------------------
-    // BOOLEAN QUERY
-    // ------------------------------------------------------------
     public static boolean mightContain(String value, boolean isTrusted) {
         BloomFilter<String> filter = isTrusted ? trustedFilter : untrustedFilter;
         if (filter == null) return false; // Not loaded yet
