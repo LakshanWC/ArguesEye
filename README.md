@@ -13,7 +13,7 @@ ArguesEye intercepts links before they open in your browser and checks them agai
 
 ## Features
 
-- Real-time link interception  
-- Online + offline threat checks  
+- Show website preview
+- Show risk socre with reasons
 - Sandbox mode for suspicious pages  
 - Lightweight,
