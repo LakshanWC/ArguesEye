@@ -2,12 +2,19 @@ package com.wclw.argueseye.services;
 
 import static java.lang.Math.log;
 
+import android.content.Context;
+import android.content.res.AssetManager;
 import android.util.Log;
 
 import com.wclw.argueseye.dto.RiskFactors;
+import com.wclw.argueseye.dto.RiskResult;
 import com.wclw.argueseye.security.SuspiciousTLDs;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -22,6 +29,8 @@ import java.util.regex.Pattern;
 public class RiskEvaluator {
 
     private static RiskFactors riskFactors = new RiskFactors();
+    private List<String> warnings = new ArrayList<>();
+    private RiskResult riskResults;
     private static final String TAG = "RiskEvaluator";
     private static final String SUSPICIOUS_SPECIAL_CHARS = "0@1!|lI-_~";
     private static final String IP_REGEX =
@@ -43,11 +52,9 @@ public class RiskEvaluator {
     /**
      * Main risk calculation method - to be filled with logic that combines all factors
      */
-    public int calculateRiskFactor(String webUrl) {
+    public RiskResult calculateRiskFactor(String webUrl, Context context) {
 
-        // You can create a RiskResult object, calculate score, collect warnings, etc.
         int riskScore = 0;
-        List<String> warnings = new ArrayList<>();
 
         try{
             boolean isIp = isIpAddress(webUrl);
@@ -95,14 +102,23 @@ public class RiskEvaluator {
                  riskScore -= 5;
             }
 
+            boolean hasHomoglyphs = hasHomoglyphs(extractDomain(webUrl),context);
+            riskFactors.setHasHomoglyphs(hasHomoglyphs);
+            if (hasHomoglyphs) {
+                riskScore += 45;
+                warnings.add("Domain contains Unicode homoglyphs (look-alike characters)");
+            }
+
+
             if (riskScore > 100) riskScore = 100;
 
-            return riskScore;
+            riskResults = new RiskResult(riskScore,warnings);
+            return  riskResults;
 
 
         }catch (Exception e){
             Log.d(TAG,"Error "+e.getMessage());
-            return 0;
+            return riskResults = new RiskResult(0,null);
         }
     }
 
@@ -166,9 +182,6 @@ public class RiskEvaluator {
         }return 0;
     }
 
-    /**
-     * Checks if URL contains '@' symbol (classic phishing trick)
-     */
     private boolean hasAtSymbolInUrl(String webUrl) {
         return webUrl.contains("@");
     }
@@ -198,8 +211,35 @@ public class RiskEvaluator {
      * Attempts to detect homoglyph / look-alike characters in domain
      * (very important nowadays - cyrillic, greek letters etc)
      */
-    private boolean hasHomoglyphs(String domain) {
-        // TODO: Implement basic or advanced homoglyph detection
+    private boolean hasHomoglyphs(String domain,Context context) {
+        try {
+            List<String> domainCodePoints = toUnicodeList(domain);
+
+            AssetManager assetManager = context.getAssets();
+            InputStream inputStream = assetManager.open("consfusables.txt");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.replaceAll("#.*","").trim();
+                if(line.isEmpty()) continue;
+
+                String[] parts = line.split(";");
+                if (parts.length < 2) continue;
+
+                String real = parts[0].trim().toUpperCase();
+                String fake = parts[1].trim().toUpperCase();
+
+                if (domainCodePoints.contains(fake)) {
+                    return true;
+                }
+            }
+
+            reader.close();
+        }catch (Exception e){
+            Log.d(TAG,"Error"+e.getMessage());
+            return false;
+        }
         return false;
     }
 
@@ -208,7 +248,6 @@ public class RiskEvaluator {
      * Calculates approximate entropy (randomness) of domain name
      * Higher entropy → more likely to be DGA (Domain Generation Algorithm)
      */
-
 
     private double calculateDomainEntropy(String domain) {
         double entropy = 0;
@@ -272,4 +311,21 @@ public class RiskEvaluator {
         if (lastDot == -1) return "";
         return domain.substring(lastDot + 1).toLowerCase();
     }
+
+    /*
+    * convert String to Unicode Char
+    */
+
+    private List<String> toUnicodeList(String input) {
+        List<String> list = new ArrayList<>();
+
+        for (int i = 0; i < input.length(); ) {
+            int cp = input.codePointAt(i);
+            list.add(String.format("%04X", cp));
+            i += Character.charCount(cp);
+        }
+
+        return list;
+    }
+
 }

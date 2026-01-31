@@ -28,6 +28,7 @@ import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.common.base.MoreObjects;
 import com.wclw.argueseye.dto.DomainTimeData;
 import com.wclw.argueseye.dto.RdapRespose;
+import com.wclw.argueseye.dto.RiskResult;
 import com.wclw.argueseye.dto.UrlScanResponse;
 import com.wclw.argueseye.helpers.ArguesEyeAPIHelper;
 import com.wclw.argueseye.helpers.BloomFilterHelper;
@@ -61,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     private static int progress = 0;
     private ProgressBar riskValuePB;
     private TextView tvRiskScore;
+    private TextView tvRiskSummery;
 
     //For FAB button
     private Button btnFabParent;
@@ -122,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
         fabMenuLayout = findViewById(R.id.fab_menu_items_container);
         tvRiskScore = findViewById(R.id.tv_risk_score);
         riskValuePB = findViewById(R.id.progress_risk);
+        tvRiskSummery = findViewById(R.id.tv_risk_summery);
 
         urlDetailsTV = findViewById(R.id.tv_url_details_status);
         domainInfoTV = findViewById(R.id.tv_domain_info_status);
@@ -302,7 +305,17 @@ public class MainActivity extends AppCompatActivity {
 //        getWebsiteImage(editText_url.getText().toString());
 
         RiskEvaluator riskEvaluator = new RiskEvaluator();
-        progress(riskEvaluator.calculateRiskFactor(editText_url.getText().toString()));
+        RiskResult riskResult = riskEvaluator.calculateRiskFactor(editText_url.getText().toString());
+
+        //show in progress bar and show the warnning messages on ui
+        progress(riskResult.getScore());
+
+        StringBuilder sb = new StringBuilder();
+        for (String line: riskResult.getMessages()) {
+                sb.append(line).append("\n");
+        }
+        tvRiskSummery.setText(sb.toString());
+
 
         btnVerifiy.setClickable(true);
     }
@@ -375,7 +388,6 @@ public class MainActivity extends AppCompatActivity {
                 TextView tv_domain_age = findViewById(R.id.tv_domain_age);
                 TextView tv_is_expired = findViewById(R.id.tv_is_expired);
                 TextView tv_safety_note = findViewById(R.id.tv_safety_note);
-                TextView tv_summery = findViewById(R.id.tv_risk_summery);
 
 
                 if (response.isSuccessful() && response.body() != null) {
@@ -408,7 +420,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                     tv_is_expired.setText(domainTimeData.isExpired? "True":"False");
                     tv_safety_note.setText(domainTimeData.message);
-                    tv_summery.setText(domainTimeData.message);
 
                 } else {
                     tv_registor.setText("N/A");
