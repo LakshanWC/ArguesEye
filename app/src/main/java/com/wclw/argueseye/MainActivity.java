@@ -305,7 +305,7 @@ public class MainActivity extends AppCompatActivity {
 //        getWebsiteImage(editText_url.getText().toString());
 
         RiskEvaluator riskEvaluator = new RiskEvaluator();
-        RiskResult riskResult = riskEvaluator.calculateRiskFactor(editText_url.getText().toString());
+        RiskResult riskResult = riskEvaluator.calculateRiskFactor(editText_url.getText().toString(),this);
 
         //show in progress bar and show the warnning messages on ui
         progress(riskResult.getScore());

@@ -1,0 +1,83 @@
+# Common brands targeted in phishing attacks
+# Financial/Payment
+paypal
+stripe
+venmo
+cashapp
+zelle
+square
+visa
+mastercard
+amex
+americanexpress
+discover
+wellsfargo
+bankofamerica
+chase
+citibank
+hsbc
+barclays
+santander
+capitalone
+
+# Tech Giants
+google
+gmail
+microsoft
+outlook
+hotmail
+apple
+icloud
+amazon
+facebook
+meta
+instagram
+whatsapp
+twitter
+linkedin
+dropbox
+adobe
+netflix
+spotify
+zoom
+slack
+
+# E-commerce
+ebay
+etsy
+shopify
+alibaba
+walmart
+target
+bestbuy
+
+# Crypto/Finance
+coinbase
+binance
+kraken
+blockchain
+metamask
+crypto
+
+# Government/Utilities
+irs
+fedex
+ups
+dhl
+usps
+postnl
+
+# Telecom
+verizon
+att
+tmobile
+vodafone
+orange
+
+# Other Popular Services
+docusign
+payoneer
+booking
+airbnb
+uber
+doordash

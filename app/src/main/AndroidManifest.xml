@@ -42,14 +42,14 @@
         <activity
             android:name=".SandBoxBrowser"
             android:exported="false" />
-        <activity
-            android:name=".MainActivity"
-            android:exported="false" />
+<!--        <activity-->
+<!--            android:name=".MainActivity"-->
+<!--            android:exported="false" />-->
         <activity
             android:name=".MenuActivity"
             android:exported="false" />
         <activity
-            android:name=".SplashScreenActivity"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
