@@ -145,10 +145,15 @@
                         android:textColor="@color/text_primary" />
 
                     <TextView
+                        android:layout_marginTop="10dp"
                         android:id="@+id/tv_risk_summery"
+                        android:singleLine="false"
+                        android:lineSpacingExtra="4dp"
+                        android:inputType="textMultiLine"
+                        android:textColor="@color/text_secondary"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:visibility="gone"/>
+                        android:visibility="visible"/>
 
                 </LinearLayout>
 

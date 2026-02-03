@@ -22,6 +22,7 @@ public class MenuActivity extends AppCompatActivity {
     private MaterialCardView btn_settings;
     private MaterialCardView btn_exit;
     private MaterialCardView btn_blockList;
+    private MaterialCardView btn_about;
 
 
     @Override
@@ -38,6 +39,7 @@ public class MenuActivity extends AppCompatActivity {
         btn_settings = findViewById(R.id.btn_settings);
         btn_exit = findViewById(R.id.btn_exit);
         btn_blockList = findViewById(R.id.btn_blocklist);
+        btn_about = findViewById(R.id.btn_about);
 
 
 
@@ -52,6 +54,11 @@ public class MenuActivity extends AppCompatActivity {
 
         btn_settings.setOnClickListener(V->{
             Intent intent = new Intent(this,AppSettings.class);
+            startActivity(intent);
+        });
+
+        btn_about.setOnClickListener(V->{
+            Intent intent = new Intent(this,AboutActivity.class);
             startActivity(intent);
         });
 
