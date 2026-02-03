@@ -1,11 +1,47 @@
 <resources>
-    <string name="app_name">ArguesEye</string>
-    <string name="app_version">Version 0.0.0.1</string>
-    <string name="accessibility_service_name">This is a place holder name</string>
-    <string name="accessibility_service_description">
-        ArguesEye needs Accessibility access to detect when you tap any link in any app
-        (WhatsApp, Telegram, SMS, etc.) and protect you from phishing, malware, and dangerous sites.\n\n
-    • We do NOT read your messages\n
-    • We only analyze clicked URLs\n
-    • You can disable this anytime in Settings</string>
+    <string name="app_name">Argus Eye</string>
+    <string name="tag_line">Understand the risk behind every URL</string>
+
+    <!-- About screen -->
+    <string name="about_header">About Argus Eye</string>
+    <string name="features_header">Key Features</string>
+    <string name="risk_points_header">Risk Detection Factors</string>
+
+    <string name="risk_points_detailed_list">
+        High impact checks:\n
+        • Raw IP address → +45\n
+        • @ symbol in URL → +40\n
+        • Homoglyph / look-alike characters → +45\n
+        • Typosquatting of known brands → +40\n
+        • TLD in subdomain → +35\n\n
+
+        Medium impact checks:\n
+        • Suspicious TLD → +30\n
+        • URL shortener service → +30\n
+        • High domain entropy → +18–30\n
+        • Excessive subdomains → +10–25\n
+        • Brand impersonation → +25\n
+        • Non-standard port → +20\n
+        • No HTTPS → +20\n\n
+
+        Lower impact checks:\n
+        • Many special characters → +10–20\n
+        • Suspicious keywords → +15\n
+        • High digit ratio → +15\n
+        • Very long URL → +15
+    </string>
+
+    <string name="developer_credit">Developed by Lakshan Weliwita</string>
+
+    <!-- About description -->
+    <string name="about_description">
+        Argus Eye helps you stay safe online by analyzing URLs and identifying potential threats.
+        It explains why a link may be risky, so you can make informed decisions before opening it.
+    </string>
+
+    <string name="features_list">
+        • URL risk analysis in real time\n
+        • Multiple risk factor detection\n
+        • Clear visual and text-based warnings\n
+    </string>
 </resources>

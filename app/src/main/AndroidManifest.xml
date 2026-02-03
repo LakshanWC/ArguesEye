@@ -31,6 +31,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ArguesEye">
         <activity
+            android:name=".AboutActivity"
+            android:exported="false" />
+        <activity
             android:name=".services.BlockList"
             android:exported="false" />
         <activity
@@ -41,10 +44,9 @@
             android:exported="false" />
         <activity
             android:name=".SandBoxBrowser"
-            android:exported="false" />
-<!--        <activity-->
-<!--            android:name=".MainActivity"-->
-<!--            android:exported="false" />-->
+            android:exported="false" /> <!-- <activity -->
+        <!-- android:name=".MainActivity" -->
+        <!-- android:exported="false" /> -->
         <activity
             android:name=".MenuActivity"
             android:exported="false" />
