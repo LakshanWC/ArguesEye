@@ -202,16 +202,29 @@ public class RiskEvaluator {
      * Checks if the given URL uses only an IP address instead of a domain name
      */
     private boolean isIpAddress(String webUrl) {
-        if (webUrl != null) {
-            String domain = extractDomain(webUrl);
-            try {
-                return domain.matches(IP_REGEX);
-            } catch (Exception e) {
-                Log.d(TAG, "Error in isIpAddress: " + e.getMessage());
-                return false;
+        if (webUrl == null) return false;
+
+        try {
+            URI uri = new URI(webUrl);
+            String host = uri.getHost();
+
+            if (host == null) {
+                //  manually strip scheme and extract before first slash/colon
+                String stripped = webUrl.replaceFirst("^[a-zA-Z][a-zA-Z0-9+\\-.]*://", "");
+                if (stripped.contains("@")) {
+                    stripped = stripped.substring(stripped.lastIndexOf('@') + 1);
+                }
+
+                stripped = stripped.split("[/?#]")[0];
+                stripped = stripped.split(":")[0];
+                host = stripped;
             }
+
+            return host.matches(IP_REGEX);
+        } catch (Exception e) {
+            Log.d(TAG, "Error in isIpAddress: " + e.getMessage());
+            return false;
         }
-        return false;
     }
 
     /**
